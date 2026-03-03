@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고정비 관리 통합 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0f172a', card: '#1e293b', border: '#334155', text: '#f8fafc', muted: '#94a3b8' },
+                        primary: { 500: '#3b82f6', 600: '#2563eb' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-dark-text min-h-screen p-6 antialiased selection:bg-primary-500 selection:text-white transition-colors duration-200">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+
+        <!-- 헤더 및 탭 내비게이션 -->
+        <header class="space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <a href="index.html"
+                        class="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-dark-muted hover:text-primary-600 transition-colors mb-2">
+                        ← 가계부로 돌아가기
+                    </a>
+                    <h1
+                        class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3 transition-colors">
+                        <svg class="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        고정비 관리
+                    </h1>
+                    <p class="text-gray-500 dark:text-dark-muted mt-2 text-sm transition-colors">모든 지출과 구독 현황을 한눈에
+                        관리하세요.</p>
+                </div>
+                <!-- 테마 토글 버튼 -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn"
+                    class="p-2.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-dark-muted transition-colors shadow-sm">
+                    <!-- 기본은 달 모양(다크모드 활성 시 해 모양으로 JS에서 변경) -->
+                    <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 네비게이션 탭 -->
+            <nav
+                class="flex gap-2 border-b border-gray-200 dark:border-dark-border pb-px overflow-x-auto hide-scrollbar">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard"
+                    class="px-4 py-2 text-sm font-medium border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 transition-colors whitespace-nowrap">📊
+                    통합 대시보드</button>
+                <button onclick="switchTab('ai')" id="tab-ai"
+                    class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-dark-muted hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap">🤖
+                    AI 구독료</button>
+                <button onclick="switchTab('general')" id="tab-general"
+                    class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-dark-muted hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap">📺
+                    일반 고정비</button>
+            </nav>
+        </header>
+
+        <!-- (NEW) 뷰 스위처: 탭에 따라 내용이 바뀝니다 -->
+        <main id="view-dashboard" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 요약 카드 -->
+                <div
+                    class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 shadow-sm col-span-1 md:col-span-2 flex flex-col justify-center">
+                    <h2 class="text-sm font-medium text-gray-500 dark:text-dark-muted mb-2">이번 달 총 고정비 추정액 (KRW 환산)</h2>
+                    <div class="flex items-baseline gap-2 mb-6">
+                        <span class="text-5xl font-bold tracking-tight text-gray-900 dark:text-white"
+                            id="dashboard-total-krw">₩0</span>
+                        <span class="text-sm text-gray-400 dark:text-dark-muted"
+                            id="dashboard-total-usd-hint">($0.00)</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-auto" id="dashboard-category-summary">
+                        <!-- 카테고리별 요약 들어감 -->
+                    </div>
+                </div>
+
+                <!-- 차트 영역 -->
+                <div
+                    class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 shadow-sm flex flex-col items-center justify-center min-h-[250px]">
+                    <h2 class="text-sm font-medium text-gray-500 dark:text-dark-muted mb-4 w-full text-left">지출 비율</h2>
+                    <div class="relative w-[180px] h-[180px]">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 결제 임박 전체 리스트 -->
+            <div
+                class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border shadow-sm overflow-hidden mt-6">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+                    <h3 class="font-semibold text-gray-900 dark:text-white">결제 임박 타임라인</h3>
+                </div>
+                <div class="divide-y divide-gray-100 dark:divide-dark-border/50" id="dashboard-timeline">
+                    <!-- 타임라인 아이템 들어감 -->
+                </div>
+            </div>
+
+            <!-- 전체 구독 내역 -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">📝 전체 구독 내역</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="dashboard-cards-container">
+                    <!-- 전체 구독 카드가 들어감 -->
+                </div>
+            </div>
+        </main>
+
+        <main id="view-ai" class="space-y-6 hidden">
+            <!-- AI 구독 리스트 영역 -->
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white transition-colors">🤖 AI 구독 서비스</h2>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddModal('ai')"
+                        class="bg-primary-600 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        AI 구독 추가
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="ai-cards-container">
+                <!-- Data will render here -->
+            </div>
+        </main>
+
+        <main id="view-general" class="space-y-6 hidden">
+            <!-- 일반 구독 리스트 영역 -->
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white transition-colors">📺 일반 고정비</h2>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddModal('general')"
+                        class="bg-primary-600 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        일반 고정비 추가
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="general-cards-container">
+                <!-- Data will render here -->
+            </div>
+        </main>
+
+
+
+    </div>
+
+    <!-- 추가/편집 모달 (2단계) -->
+    <div id="subscription-modal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div
+            class="bg-dark-card border border-dark-border rounded-xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-dark-border shrink-0">
+                <div class="flex items-center gap-2">
+                    <button id="modal-back-btn" onclick="showStep1()"
+                        class="text-dark-muted hover:text-white transition-colors hidden">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <h3 class="text-lg font-semibold text-white" id="modal-title">서비스 선택</h3>
+                </div>
+                <button onclick="closeModal()" class="text-dark-muted hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Step 1: 서비스 선택 -->
+            <div id="modal-step-service" class="p-5 overflow-y-auto">
+                <input type="text" id="preset-search" placeholder="서비스 검색..." oninput="filterPresets(this.value)"
+                    class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 mb-4 outline-none focus:border-primary-500 placeholder-dark-muted/50">
+                <div id="preset-grid" class="grid grid-cols-3 gap-2"></div>
+                <p class="text-xs text-dark-muted/60 mt-4 leading-relaxed">⚠️ 표시된 요금은 참고용이며, 실제 가격은 반드시 각 서비스의 결제 페이지에서
+                    확인하세요. VAT, 환율, 지역 등에 따라 변동될 수 있습니다.</p>
+            </div>
+            <!-- Step 2: 상세 입력 -->
+            <div id="modal-step-detail" class="p-5 space-y-4 overflow-y-auto hidden">
+                <input type="hidden" id="modal-sub-id">
+                <input type="hidden" id="modal-preset-id">
+                <!-- 요금제 선택 카드 (프리셋일 때만) -->
+                <div id="plan-cards-section" class="hidden">
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">요금제 선택</label>
+                    <div id="plan-cards" class="grid grid-cols-2 gap-2 mb-3"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">카테고리</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="modal-category-input" list="category-options"
+                            placeholder="예: AI 구독료, 엔터테인먼트"
+                            class="flex-1 bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500 placeholder-dark-muted/50">
+                        <button type="button" onclick="addCategoryFromInput()"
+                            class="px-3 bg-primary-600 hover:bg-primary-500 text-white text-sm rounded-lg transition-colors"
+                            title="카테고리 추가">+</button>
+                    </div>
+                    <datalist id="category-options"></datalist>
+                    <div id="category-tags" class="flex flex-wrap gap-1.5 mb-3"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">아이콘 / 이모지 (수기 입력 시 커스텀)</label>
+                    <input type="text" id="modal-icon" placeholder="예: 🚀 또는 URL"
+                        class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500 placeholder-dark-muted/50 mb-4">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">서비스 이름</label>
+                    <input type="text" id="modal-name" placeholder="예: ChatGPT Plus"
+                        class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500 placeholder-dark-muted/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5" id="label-price">월 구독료</label>
+                    <div class="flex gap-2">
+                        <select id="modal-currency"
+                            class="w-24 bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500">
+                            <option value="USD">$ USD</option>
+                            <option value="KRW">₩ KRW</option>
+                        </select>
+                        <input type="number" id="modal-price" placeholder="예: 20" step="0.01" min="0"
+                            class="flex-1 bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500 placeholder-dark-muted/50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5" id="label-start-date">구독 시작일</label>
+                    <input type="date" id="modal-start-date"
+                        class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500">
+                </div>
+                <!-- 다음 결제일 (AI 구독용) -->
+                <div id="section-next-billing">
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">다음 결제일</label>
+                    <input type="date" id="modal-next-billing"
+                        class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500">
+                </div>
+                <!-- 지급 주기 (일반 고정비용) -->
+                <div id="section-billing-cycle" class="hidden">
+                    <label class="block text-xs font-medium text-dark-muted mb-1.5">지급 주기</label>
+                    <select id="modal-billing-cycle"
+                        onchange="document.getElementById('billing-cycle-custom-wrap').classList.toggle('hidden', this.value !== '기타')"
+                        class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500">
+                        <option value="매월">매월</option>
+                        <option value="매주">매주</option>
+                        <option value="매일">매일</option>
+                        <option value="매년">매년</option>
+                        <option value="기타">기타 (수기입력)</option>
+                    </select>
+                    <div id="billing-cycle-custom-wrap" class="hidden mt-2">
+                        <input type="text" id="modal-billing-cycle-custom" placeholder="예: 격월, 분기별"
+                            class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-primary-500 placeholder-dark-muted/50">
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="modal-active" checked
+                        class="w-4 h-4 rounded border-dark-border bg-dark-bg text-primary-600 focus:ring-primary-500">
+                    <label for="modal-active" class="text-sm text-dark-muted">활성 구독</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="modal-trial"
+                        class="w-4 h-4 rounded border-dark-border bg-dark-bg text-purple-600 focus:ring-purple-500"
+                        onchange="if(this.checked){ document.getElementById('modal-active').checked=false; }">
+                    <label for="modal-trial" class="text-sm text-dark-muted">무료체험으로 등록</label>
+                    <span class="text-xs text-purple-400">구독 시작일에 자동 활성화</span>
+                </div>
+            </div>
+            <div id="modal-footer-detail" class="flex gap-3 p-5 border-t border-dark-border shrink-0 hidden">
+                <button onclick="closeModal()"
+                    class="flex-1 bg-dark-bg hover:bg-dark-border border border-dark-border text-white text-sm py-2.5 rounded-lg transition-colors">취소</button>
+                <button onclick="saveSubscription()"
+                    class="flex-1 bg-primary-600 hover:bg-primary-500 text-white text-sm py-2.5 rounded-lg transition-colors font-medium">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        // 유틸: HTML 이스케이프
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        let allSubscriptions = [];
+        let currentChart = null;
+
+        // ─── 카테고리 관리 (localStorage) ───
+        const DEFAULT_CATEGORIES = ['AI 구독료', '생산성', '엔터테인먼트', '클라우드 인프라', '일반 고정비'];
+        function loadCategories() {
+            const saved = localStorage.getItem('userCategories');
+            return saved ? JSON.parse(saved) : [...DEFAULT_CATEGORIES];
+        }
+        function saveCategories(cats) {
+            localStorage.setItem('userCategories', JSON.stringify(cats));
+        }
+        let userCategories = loadCategories();
+
+        function renderCategoryOptions() {
+            const datalist = document.getElementById('category-options');
+            if (datalist) datalist.innerHTML = userCategories.map(c => `<option value="${escapeHTML(c)}"></option>`).join('');
+            renderCategoryTags();
+        }
+        function renderCategoryTags() {
+            const container = document.getElementById('category-tags');
+            if (!container) return;
+            container.innerHTML = userCategories.map(c => `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-dark-bg border border-dark-border text-dark-muted cursor-pointer hover:border-primary-500 transition-colors" onclick="selectCategoryTag('${escapeHTML(c)}')">
+                    ${escapeHTML(c)}
+                    <button onclick="event.stopPropagation(); removeCategory('${escapeHTML(c)}')" class="text-dark-muted hover:text-red-400 ml-0.5 text-xs leading-none">×</button>
+                </span>
+            `).join('');
+        }
+        function selectCategoryTag(cat) {
+            document.getElementById('modal-category-input').value = cat;
+            updateFormForCategory(cat);
+        }
+        function addCategoryFromInput() {
+            const input = document.getElementById('modal-category-input');
+            const val = input.value.trim();
+            if (val && !userCategories.includes(val)) {
+                userCategories.push(val);
+                saveCategories(userCategories);
+                renderCategoryOptions();
+            }
+        }
+        function removeCategory(cat) {
+            if (DEFAULT_CATEGORIES.includes(cat)) { alert('기본 카테고리는 삭제할 수 없습니다.'); return; }
+            userCategories = userCategories.filter(c => c !== cat);
+            saveCategories(userCategories);
+            renderCategoryOptions();
+        }
+
+        // ─── 카테고리에 따른 폼 전환 (AI 구독 ↔ 일반 고정비) ───
+        function updateFormForCategory(cat) {
+            const isGeneral = cat !== 'AI 구독료';
+            document.getElementById('section-next-billing').classList.toggle('hidden', isGeneral);
+            document.getElementById('section-billing-cycle').classList.toggle('hidden', !isGeneral);
+            document.getElementById('label-price').textContent = isGeneral ? '금액' : '월 구독료';
+            document.getElementById('label-start-date').textContent = isGeneral ? '지급 시작일' : '구독 시작일';
+        }
+
+        // 상단에 위치: 프리셋 데이터 추가 (카테고리: AI 구독료, 엔터테인먼트, 생산성 소프트웨어, 클라우드/인프라, 생활/통신)
+        const SERVICE_PRESETS = {
+            chatgpt: {
+                label: 'OpenAI (ChatGPT)', domain: 'openai.com', icon: '🤖', color: '#10a37f', category: 'AI 구독료', plans: [
+                    { name: 'ChatGPT Plus', price: 29000, currency: 'KRW', note: 'VAT 포함 (22달러)' },
+                    { name: 'ChatGPT Pro', price: 299000, currency: 'KRW', note: 'VAT 포함 (220달러)' },
+                    { name: 'ChatGPT Team', price: 25, currency: 'USD', note: '/인' }
+                ]
+            },
+            claude: {
+                label: 'Anthropic (Claude)', domain: 'claude.ai', icon: '🟤', color: '#d4a574', category: 'AI 구독료', plans: [
+                    { name: 'Claude (무료)', price: 0, currency: 'USD' },
+                    { name: 'Claude Pro (월간)', price: 20, currency: 'USD', note: 'VAT 별도' },
+                    { name: 'Claude Pro (연간)', price: 19, currency: 'USD', note: 'VAT 포함' },
+                    { name: 'Claude Max', price: 110, currency: 'USD', note: 'VAT 포함/부터' },
+                    { name: 'Claude Team', price: 30, currency: 'USD', note: '/인' },
+                    { name: 'Claude Code', price: 150, currency: 'USD', note: '/인 (Team)' }
+                ]
+            },
+            gemini: {
+                label: 'Google (Gemini)', domain: 'gemini.google.com', icon: '✨', color: '#8e24aa', category: 'AI 구독료', plans: [
+                    { name: 'Basic (100GB)', price: 2000, currency: 'KRW', note: '연 20,000₩' },
+                    { name: 'Standard (200GB)', price: 37000, currency: 'KRW', note: '연간' },
+                    { name: 'Google AI Plus (200GB)', price: 110000, currency: 'KRW', note: '연간' },
+                    { name: 'Premium (2TB)', price: 119000, currency: 'KRW', note: '연간' },
+                    { name: 'Google AI Pro (2TB)', price: 29000, currency: 'KRW', note: '월간' },
+                    { name: 'Premium (5TB)', price: 297500, currency: 'KRW', note: '연간' },
+                    { name: 'Google AI Ultra (30TB)', price: 0, currency: 'KRW', note: '월간 (가격 변동)' }
+                ]
+            },
+            copilot: {
+                label: 'GitHub Copilot', domain: 'github.com', icon: '🐙', color: '#fff', category: 'AI 구독료', plans: [
+                    { name: 'Copilot Individual', price: 10, currency: 'USD' },
+                    { name: 'Copilot Business', price: 19, currency: 'USD', note: '/인' }
+                ]
+            },
+            v0: {
+                label: 'Vercel (v0)', domain: 'v0.dev', icon: '▲', color: '#ffffff', category: 'AI 구독료', plans: [
+                    { name: 'v0 Premium', price: 20, currency: 'USD' }
+                ]
+            },
+            cursor: {
+                label: 'Cursor', domain: 'cursor.com', icon: '💻', color: '#ffffff', category: 'AI 구독료', plans: [
+                    { name: 'Cursor Pro', price: 20, currency: 'USD' },
+                    { name: 'Cursor Business', price: 40, currency: 'USD', note: '/인' }
+                ]
+            },
+            perplexity: {
+                label: 'Perplexity AI', domain: 'perplexity.ai', icon: '🔍', color: '#22d3ee', category: 'AI 구독료', plans: [
+                    { name: 'Perplexity Pro', price: 20, currency: 'USD' }
+                ]
+            },
+            midjourney: {
+                label: 'Midjourney', domain: 'midjourney.com', icon: '🎨', color: '#ffffff', category: 'AI 구독료', plans: [
+                    { name: 'Basic Plan', price: 10, currency: 'USD' },
+                    { name: 'Standard Plan', price: 30, currency: 'USD' },
+                    { name: 'Pro Plan', price: 60, currency: 'USD' }
+                ]
+            },
+            qwen: {
+                label: 'Alibaba (Qwen)', domain: 'aliyun.com', icon: '☁️', color: '#ff6a00', category: 'AI 구독료', plans: [
+                    { name: 'AI Coding Lite', price: 6, currency: 'USD' },
+                    { name: 'AI Coding Pro', price: 29, currency: 'USD' }
+                ]
+            },
+            kimi: {
+                label: 'Moonshot (Kimi)', domain: 'moonshot.cn', icon: '🌙', color: '#000000', category: 'AI 구독료', plans: [
+                    { name: 'Kimi (무료)', price: 0, currency: 'KRW' },
+                    { name: 'Moderato', price: 19, currency: 'USD' }
+                ]
+            },
+            chatglm: {
+                label: 'Zhipu (ChatGLM)', domain: 'zhipuai.cn', icon: '🧠', color: '#3b82f6', category: 'AI 구독료', plans: [
+                    { name: 'GLM Coding Lite', price: 3, currency: 'USD' },
+                    { name: 'GLM Coding Pro', price: 15, currency: 'USD' }
+                ]
+            },
+            ernie: {
+                label: 'Baidu (ERNIE)', domain: 'baidu.com', icon: '🐾', color: '#2563eb', category: 'AI 구독료', plans: [
+                    { name: 'ERNIE (무료)', price: 0, currency: 'KRW' },
+                    { name: 'ERNIE 4.0 Pro', price: 8.18, currency: 'USD', note: '¥59.9' }
+                ]
+            },
+            yi: {
+                label: '01.AI (Yi)', domain: '01.ai', icon: '1️⃣', color: '#10b981', category: 'AI 구독료', plans: [
+                    { name: 'Yi (오픈소스)', price: 0, currency: 'KRW', note: 'API 종량제' }
+                ]
+            },
+            netflix: {
+                label: 'Netflix', domain: 'netflix.com', icon: 'N', color: '#e50914', category: '엔터테인먼트', plans: [
+                    { name: '광고형 스탠다드', price: 5500, currency: 'KRW' },
+                    { name: '스탠다드', price: 13500, currency: 'KRW' },
+                    { name: '프리미엄', price: 17000, currency: 'KRW' }
+                ]
+            },
+            youtube: {
+                label: 'YouTube Premium', domain: 'youtube.com', icon: '▶️', color: '#ff0000', category: '엔터테인먼트', plans: [
+                    { name: '개인 멤버십', price: 14900, currency: 'KRW' }
+                ]
+            },
+            spotify: {
+                label: 'Spotify', domain: 'spotify.com', icon: '🟢', color: '#1db954', category: '엔터테인먼트', plans: [
+                    { name: '개인 (Basic)', price: 7900, currency: 'KRW' },
+                    { name: '개인 (Premium)', price: 10900, currency: 'KRW' },
+                    { name: '듀오', price: 16350, currency: 'KRW' }
+                ]
+            },
+            aws: {
+                label: 'AWS', domain: 'aws.amazon.com', icon: '☁️', color: '#ff9900', category: '클라우드 인프라', plans: [
+                    { name: 'Free Tier', price: 0, currency: 'USD' },
+                    { name: 'Lightsail (기본)', price: 3.5, currency: 'USD', note: '/월 부터' }
+                ]
+            },
+            ms365: {
+                label: 'Microsoft 365', domain: 'microsoft.com', icon: '⊞', color: '#e81123', category: '생산성', plans: [
+                    { name: 'Personal', price: 89000, currency: 'KRW', note: '연간' },
+                    { name: 'Family', price: 119000, currency: 'KRW', note: '연간' }
+                ]
+            }
+        };
+
+        let selectedPresetId = null;
+
+        // 프리셋 그리드 렌더링
+        function renderPresetGrid(filter = '') {
+            const grid = document.getElementById('preset-grid');
+            const lf = filter.toLowerCase();
+            let html = '';
+            const grouped = {};
+            Object.entries(SERVICE_PRESETS).forEach(([id, p]) => {
+                // 현재 탭 컨텍스트(currentTab)에 맞게 프리셋 필터링
+                const isAIPreset = p.category === 'AI 구독료';
+                if (currentTab === 'ai' && !isAIPreset) return;
+                if (currentTab === 'general' && isAIPreset) return;
+
+                if (lf && !p.label.toLowerCase().includes(lf) && !p.plans.some(pl => pl.name.toLowerCase().includes(lf))) return;
+                if (!grouped[p.category]) grouped[p.category] = [];
+                grouped[p.category].push({ id, ...p });
+            });
+            Object.entries(grouped).forEach(([cat, items]) => {
+                html += `<div class="col-span-3 text-xs text-dark-muted font-medium mt-2 mb-1">${cat}</div>`;
+                items.forEach(s => {
+                    const iconHTML = s.domain
+                        ? `<img src="https://www.google.com/s2/favicons?domain=${s.domain}&sz=128" alt="${s.label} 로고" class="w-7 h-7 rounded-md object-contain" onerror="this.outerHTML='<span class=\\'text-2xl\\'>${s.icon}</span>'">`
+                        : `<span class="text-2xl">${s.icon}</span>`;
+
+                    html += `<button onclick="selectPreset('${s.id}')" class="flex flex-col items-center gap-1.5 p-3 bg-dark-bg border border-dark-border rounded-lg hover:border-primary-500 transition-colors text-center group">
+                        ${iconHTML}
+                        <span class="text-xs text-dark-muted group-hover:text-white transition-colors leading-tight">${s.label}</span>
+                    </button>`;
+                });
+            });
+            // 기타 직접 입력
+            html += `<div class="col-span-3 text-xs text-dark-muted font-medium mt-2 mb-1">기타</div>`;
+            html += `<button onclick="selectPreset('custom')" class="flex flex-col items-center gap-1.5 p-3 bg-dark-bg border border-dark-border rounded-lg hover:border-primary-500 transition-colors text-center group">
+                <span class="text-2xl">✏️</span>
+                <span class="text-xs text-dark-muted group-hover:text-white transition-colors">직접 입력</span>
+            </button>`;
+            grid.innerHTML = html;
+        }
+
+        function filterPresets(val) { renderPresetGrid(val); }
+
+        function selectPreset(presetId) {
+            selectedPresetId = presetId;
+            document.getElementById('modal-preset-id').value = presetId;
+            if (presetId === 'custom') {
+                showStep2(null); // Pass null for custom entry
+                return;
+            }
+            const preset = SERVICE_PRESETS[presetId]; // Use SERVICE_PRESETS
+            showStep2(preset);
+        }
+
+        function showStep1() {
+            document.getElementById('modal-step-service').classList.remove('hidden');
+            document.getElementById('modal-step-detail').classList.add('hidden');
+            document.getElementById('modal-footer-detail').classList.add('hidden');
+            document.getElementById('modal-back-btn').classList.add('hidden');
+            document.getElementById('modal-title').textContent = '서비스 선택';
+            document.getElementById('preset-search').value = '';
+            renderPresetGrid();
+        }
+
+        function showStep2(preset) {
+            document.getElementById('modal-step-service').classList.add('hidden');
+            document.getElementById('modal-step-detail').classList.remove('hidden');
+            document.getElementById('modal-footer-detail').classList.remove('hidden');
+            const isNew = !document.getElementById('modal-sub-id').value;
+            document.getElementById('modal-back-btn').classList.toggle('hidden', !isNew);
+
+            const iconInput = document.getElementById('modal-icon');
+            const catInput = document.getElementById('modal-category-input');
+            if (preset) {
+                document.getElementById('modal-title').textContent = preset.label + ' 요금제 선택';
+                document.getElementById('plan-cards-section').classList.remove('hidden');
+                const planCards = document.getElementById('plan-cards');
+                planCards.innerHTML = preset.plans.map((p, i) => `
+                    <button onclick="selectPlan(${i})" class="plan-card p-3 border border-dark-border rounded-lg text-left hover:border-primary-500 transition-colors bg-dark-bg text-white">
+                        <div class="text-sm font-semibold">${p.name}</div>
+                        <div class="text-xs text-dark-muted mt-1 font-mono">${p.currency === 'KRW' ? '₩' : '$'}${p.price.toLocaleString()}</div>
+                        ${p.note ? `<div class="text-[10px] text-primary-400 mt-1">${p.note}</div>` : ''}
+                    </button>
+                `).join('');
+                if (isNew) selectPlan(0);
+
+                if (preset.domain) {
+                    iconInput.value = `https://www.google.com/s2/favicons?domain=${preset.domain}&sz=128`;
+                } else if (preset.icon) {
+                    iconInput.value = preset.icon;
+                }
+
+                if (preset.category) {
+                    catInput.value = preset.category;
+                }
+            } else {
+                document.getElementById('modal-title').textContent = '직접 입력';
+                document.getElementById('plan-cards-section').classList.add('hidden');
+                if (isNew) {
+                    document.getElementById('modal-name').value = '';
+                    document.getElementById('modal-price').value = '';
+                    iconInput.value = '';
+                }
+            }
+        }
+        function selectPlan(index) {
+            const preset = SERVICE_PRESETS[selectedPresetId]; // Use SERVICE_PRESETS
+            if (!preset) return;
+            const plan = preset.plans[index];
+            document.getElementById('modal-name').value = `${preset.label.split('(')[0].trim()} ${plan.name}`; // Updated name formatting
+            document.getElementById('modal-price').value = plan.price;
+            document.getElementById('modal-currency').value = plan.currency;
+            document.querySelectorAll('.plan-card').forEach((el, i) => {
+                el.classList.toggle('border-primary-500', i === index);
+                el.classList.toggle('border-dark-border', i !== index);
+            });
+        }
+
+        // D-7 계산 함수
+        function getDaysUntil(dateStr) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const target = new Date(dateStr);
+            target.setHours(0, 0, 0, 0);
+            return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+        }
+
+        // 구독 카드 렌더링
+        function renderSubscriptionCards(services, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (services.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 dark:text-dark-muted bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl">등록된 구독이 없습니다.</div>`;
+                return;
+            }
+
+            let totals = { USD: 0, KRW: 0 };
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            services.forEach(sub => {
+                if (sub.active) totals[sub.currency] = (totals[sub.currency] || 0) + sub.price;
+
+                const startDate = new Date(sub.start_date);
+                const nextBilling = new Date(sub.next_billing);
+                const diffTime = nextBilling - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let statusBadge = '';
+                let isWarning = false;
+                let isOverdue = false;
+
+                if (sub.trial) {
+                    statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">무료 체험중</span>';
+                } else if (!sub.active) {
+                    statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-dark-bg text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-dark-border">해지됨</span>';
+                } else if (sub.cancel_scheduled) {
+                    statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20">해지 예약됨</span>';
+                } else {
+                    statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>활성</span>';
+                }
+
+                let billingBadge = '';
+                if (!sub.active) {
+                    billingBadge = '<span class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>';
+                } else if (diffDays < 0) {
+                    isOverdue = true;
+                    billingBadge = '<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="결제일 지남"></span>';
+                } else if (diffDays <= 3) {
+                    isWarning = true;
+                    billingBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30">D-${diffDays}</span>`;
+                } else {
+                    billingBadge = '<span class="w-2 h-2 rounded-full bg-primary-500"></span>';
+                }
+
+                let cancelBtn = '';
+                if (sub.active) {
+                    if (sub.cancel_scheduled) {
+                        cancelBtn = `<button onclick="toggleCancel('${sub.id}', '${escapeHTML(sub.name)}', false)" class="text-gray-500 dark:text-dark-muted hover:text-orange-500 dark:hover:text-orange-400 p-1.5 bg-gray-100 dark:bg-dark-bg rounded-lg transition-colors" title="해지 예약 취소"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>`;
+                    } else {
+                        cancelBtn = `<button onclick="toggleCancel('${sub.id}', '${escapeHTML(sub.name)}', true)" class="text-gray-500 dark:text-dark-muted hover:text-orange-500 dark:hover:text-orange-400 p-1.5 bg-gray-100 dark:bg-dark-bg rounded-lg transition-colors" title="해지 예약"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>`;
+                    }
+                }
+
+                const cur = sub.currency || 'USD';
+                const cardBorder = isWarning || isOverdue ? 'border-red-300 dark:border-red-500/40' : 'border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-muted/50';
+
+                const krwPrice = (cur === 'USD' && currentExchangeRate)
+                    ? Math.round(parseFloat(sub.price) * currentExchangeRate).toLocaleString('ko-KR')
+                    : null;
+
+                const priceHTML = `
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white ${!sub.active ? 'opacity-40' : ''}">${cur === 'KRW' ? '₩' : '$'}${cur === 'KRW' ? Math.round(sub.price).toLocaleString() : parseFloat(sub.price).toFixed(2)}</span>
+                            <span class="text-sm text-gray-500 dark:text-dark-muted">/ 월</span>
+                        </div>
+                        ${krwPrice ? `<span class="text-sm text-gray-500 dark:text-dark-muted ${!sub.active ? 'opacity-40' : ''}">≈ ₩${krwPrice}</span>` : ''}
+                    </div>`;
+
+                container.innerHTML += `
+                    <div class="bg-white dark:bg-dark-card rounded-xl p-5 border ${cardBorder} shadow-sm transition-colors flex flex-col justify-between group relative overflow-hidden">
+                        ${isWarning ? '<div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500/0 via-red-500 to-red-500/0"></div>' : ''}
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-3">
+                                ${(() => {
+                        if (sub.icon && sub.icon.startsWith('http')) return `<img src="${escapeHTML(sub.icon)}" class="w-10 h-10 rounded-lg object-cover" onerror="this.outerHTML='<div class=\\'w-10 h-10 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-lg font-bold text-gray-400\\'>${escapeHTML(sub.name.charAt(0))}</div>'">`;
+                        if (sub.icon) return `<div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-xl">${escapeHTML(sub.icon)}</div>`;
+                        // 프리셋 자동 매칭 (이름 기반)
+                        const matchedPreset = Object.values(SERVICE_PRESETS).find(p => sub.name.toLowerCase().includes(p.label.split('(')[0].trim().toLowerCase()) || p.label.toLowerCase().includes(sub.name.split(' ')[0].toLowerCase()));
+                        if (matchedPreset && matchedPreset.domain) return `<img src="https://www.google.com/s2/favicons?domain=${matchedPreset.domain}&sz=128" class="w-10 h-10 rounded-lg object-contain" onerror="this.outerHTML='<div class=\\'w-10 h-10 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-lg font-bold text-gray-400\\'>${escapeHTML(sub.name.charAt(0))}</div>'">`;
+                        if (matchedPreset && matchedPreset.icon) return `<div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-xl">${matchedPreset.icon}</div>`;
+                        return `<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 flex items-center justify-center text-lg font-bold text-primary-600 dark:text-primary-400">${escapeHTML(sub.name.charAt(0))}</div>`;
+                    })()}
+                                <div>
+                                    <h3 class="font-semibold text-base text-gray-900 dark:text-white mb-1.5">${escapeHTML(sub.name)}</h3>
+                                    ${statusBadge}
+                                </div>
+                            </div>
+                            <div class="flex gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                                ${cancelBtn}
+                                <button onclick="openEditModal(${JSON.stringify(sub).replace(/"/g, '&quot;')})"
+                                    class="text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-white p-1.5 bg-gray-100 dark:bg-dark-bg rounded-lg transition-colors" title="편집">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button onclick="deleteSubscription('${sub.id}', '${escapeHTML(sub.name)}')"
+                                    class="text-gray-500 dark:text-dark-muted hover:text-red-500 dark:hover:text-red-400 p-1.5 bg-gray-100 dark:bg-dark-bg rounded-lg transition-colors" title="삭제">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            ${priceHTML}
+                            <div class="space-y-2 pt-3 border-t border-gray-100 dark:border-dark-border/50">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-500 dark:text-dark-muted">시작일</span>
+                                    <span class="text-gray-700 dark:text-gray-300">${sub.start_date}</span>
+                                </div>
+                                ${sub.billing_cycle
+                        ? `<div class="flex justify-between text-xs items-center">
+                                        <span class="text-gray-500 dark:text-dark-muted">지급 주기</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">${escapeHTML(sub.billing_cycle === '기타' ? (sub.billing_cycle_custom || '기타') : sub.billing_cycle)}</span>
+                                      </div>`
+                        : `<div class="flex justify-between text-xs items-center">
+                                        <span class="text-gray-500 dark:text-dark-muted">다음 결제일</span>
+                                        <div class="flex items-center gap-1.5">
+                                            ${billingBadge}
+                                            <span class="font-medium ${isWarning || isOverdue ? 'text-red-500 dark:text-red-400' : 'text-gray-900 dark:text-white'}">${sub.next_billing || '-'}</span>
+                                        </div>
+                                      </div>`
+                    }
+                                ${sub.scheduled_change ? `<div class="mt-2 p-2 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 rounded-lg text-xs text-cyan-600 dark:text-cyan-400">📋 ${sub.scheduled_change.effective_date}부터 → ${escapeHTML(sub.scheduled_change.name)} ($${sub.scheduled_change.price})</div>` : ''}
+                                <div class="flex justify-between text-xs items-center mt-1">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20">${escapeHTML(sub.category || '기타')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // 전체 구독 불러오기
+        async function fetchSubscriptions() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/subscriptions`);
+                if (!res.ok) throw new Error('서버 오류');
+                const data = await res.json();
+                allSubscriptions = data.data || [];
+                renderDataByTab(); // 현재 탭에 맞게 데이터 재렌더링
+            } catch (e) {
+                // UI Error handling
+                ['ai-cards-container', 'general-cards-container'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = `<div class="col-span-4 text-red-500 dark:text-red-400 text-sm py-8 text-center">서버 연결 실패. 서버가 실행 중인지 확인하세요.</div>`;
+                });
+            }
+        }
+
+        // 모달 열기 (추가) → Step 1: 서비스 선택
+        function openAddModal(category = 'ai') {
+            selectedPresetId = null;
+            document.getElementById('modal-sub-id').value = '';
+            document.getElementById('modal-preset-id').value = '';
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-icon').value = '';
+            document.getElementById('modal-currency').value = 'USD';
+            document.getElementById('modal-price').value = '';
+            document.getElementById('modal-start-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-next-billing').value = '';
+            document.getElementById('modal-active').checked = true;
+            document.getElementById('modal-trial').checked = false;
+            document.getElementById('modal-billing-cycle').value = '매월';
+            document.getElementById('modal-billing-cycle-custom').value = '';
+            document.getElementById('billing-cycle-custom-wrap').classList.add('hidden');
+
+            const cat = category === 'general' ? '일반 고정비' : 'AI 구독료';
+            document.getElementById('modal-category-input').value = cat;
+            updateFormForCategory(cat);
+            renderCategoryOptions();
+
+            document.getElementById('subscription-modal').classList.remove('hidden');
+            showStep1();
+        }
+
+        // 모달 열기 (편집) → Step 2 직행
+        function openEditModal(sub) {
+            selectedPresetId = null;
+            document.getElementById('modal-sub-id').value = sub.id;
+            document.getElementById('modal-preset-id').value = '';
+            document.getElementById('modal-name').value = sub.name;
+            document.getElementById('modal-icon').value = sub.icon || '';
+            const cat = sub.category || '기타';
+            document.getElementById('modal-category-input').value = cat;
+            document.getElementById('modal-currency').value = sub.currency || 'USD';
+            document.getElementById('modal-price').value = sub.price;
+            document.getElementById('modal-start-date').value = sub.start_date;
+            document.getElementById('modal-next-billing').value = sub.next_billing || '';
+            document.getElementById('modal-active').checked = sub.active;
+            document.getElementById('modal-trial').checked = sub.trial || false;
+            document.getElementById('modal-billing-cycle').value = sub.billing_cycle || '매월';
+            document.getElementById('modal-billing-cycle-custom').value = sub.billing_cycle_custom || '';
+            document.getElementById('billing-cycle-custom-wrap').classList.toggle('hidden', (sub.billing_cycle || '') !== '기타');
+            updateFormForCategory(cat);
+            renderCategoryOptions();
+            document.getElementById('subscription-modal').classList.remove('hidden');
+            document.getElementById('plan-cards-section').classList.add('hidden');
+            showStep2(null);
+        }
+
+        function closeModal() {
+            document.getElementById('subscription-modal').classList.add('hidden');
+        }
+
+        // 저장 (추가 or 수정)
+        async function saveSubscription() {
+            const id = document.getElementById('modal-sub-id').value;
+            const name = document.getElementById('modal-name').value.trim();
+            const icon = document.getElementById('modal-icon').value.trim();
+            const category = document.getElementById('modal-category-input').value.trim() || '기타';
+            const currency = document.getElementById('modal-currency').value;
+            const price = parseFloat(document.getElementById('modal-price').value);
+            const start_date = document.getElementById('modal-start-date').value;
+            const next_billing = document.getElementById('modal-next-billing').value || null;
+            const isTrial = document.getElementById('modal-trial').checked;
+            let active = document.getElementById('modal-active').checked;
+            const billing_cycle = document.getElementById('modal-billing-cycle').value;
+            const billing_cycle_custom = document.getElementById('modal-billing-cycle-custom').value.trim() || null;
+
+            if (isTrial) active = false;
+
+            const isGeneral = category !== 'AI 구독료';
+            if (!name || isNaN(price) || !start_date) {
+                alert('이름, 금액, 시작일을 올바르게 입력하세요.');
+                return;
+            }
+            if (!isGeneral && !next_billing) {
+                alert('다음 결제일을 입력하세요.');
+                return;
+            }
+
+            const payload = {
+                name, price, currency, start_date, active, trial: isTrial, category, icon,
+                next_billing: isGeneral ? null : next_billing,
+                billing_cycle: isGeneral ? billing_cycle : null,
+                billing_cycle_custom: isGeneral && billing_cycle === '기타' ? billing_cycle_custom : null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_BASE_URL}/subscriptions/${id}` : `${API_BASE_URL}/subscriptions`;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('저장 실패');
+                closeModal();
+                fetchSubscriptions();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        function renderDataByTab() {
+            if (currentTab === 'dashboard') {
+                renderDashboard();
+            } else if (currentTab === 'ai') {
+                const aiSubs = allSubscriptions.filter(sub => sub.category === 'AI 구독료');
+                renderSubscriptionCards(aiSubs, 'ai-cards-container');
+            } else if (currentTab === 'general') {
+                const genSubs = allSubscriptions.filter(sub => sub.category !== 'AI 구독료');
+                renderSubscriptionCards(genSubs, 'general-cards-container');
+            }
+        }
+
+        function renderDashboard() {
+            if (!currentExchangeRate) return; // 환율 로드 전이면 대기
+
+            let totalKRW = 0;
+            let totalUSD = 0;
+            const categorySums = {}; // { 'AI 구독료': 150000, '엔터테인먼트': 30000, ... } (원화 기준)
+
+            // 진행중인(활성) 플랜들만 집계
+            const activeSubs = allSubscriptions.filter(sub => sub.active && !sub.trial);
+
+            activeSubs.forEach(sub => {
+                const cur = sub.currency || 'USD';
+                let priceInKRW = sub.price;
+
+                if (cur === 'USD') {
+                    totalUSD += sub.price;
+                    priceInKRW = sub.price * currentExchangeRate;
+                } else {
+                    totalKRW += sub.price; // KRW
+                }
+
+                const cat = sub.category || '기타';
+                categorySums[cat] = (categorySums[cat] || 0) + priceInKRW;
+            });
+
+            const grandTotalKRW = totalKRW + (totalUSD * currentExchangeRate);
+
+            // 요약 텍스트 업데이트
+            document.getElementById('dashboard-total-krw').innerText = `₩${Math.round(grandTotalKRW).toLocaleString()}`;
+            document.getElementById('dashboard-total-usd-hint').innerText = `(+$${totalUSD.toFixed(2)} USD 포함)`;
+
+            // 차트 데이터 준비
+            const catLabels = Object.keys(categorySums);
+            const catData = Object.values(categorySums).map(v => Math.round(v));
+            // 브랜드 컬러(꼬리표 색상) 매핑
+            const catColors = {
+                'AI 구독료': '#3b82f6', // primary blue
+                '엔터테인먼트': '#ef4444', // red
+                '생산성': '#10b981', // emerald
+                '클라우드 인프라': '#f59e0b', // amber
+                '기타': '#64748b' // slate
+            };
+            const bgColors = catLabels.map(l => catColors[l] || catColors['기타']);
+
+            // 범례(퍼센트) 요약 UI
+            const summaryContainer = document.getElementById('dashboard-category-summary');
+            let summaryHTML = '';
+            catLabels.forEach((label, i) => {
+                const pct = grandTotalKRW > 0 ? ((catData[i] / grandTotalKRW) * 100).toFixed(1) : 0;
+                summaryHTML += `
+                    <div class="flex flex-col">
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="w-3 h-3 rounded-full" style="background-color: ${bgColors[i]}"></span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-dark-muted">${label}</span>
+                        </div>
+                        <span class="text-lg font-bold text-gray-900 dark:text-white">${pct}%</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">₩${catData[i].toLocaleString()}</span>
+                    </div>`;
+            });
+            summaryContainer.innerHTML = summaryHTML || '<span class="text-sm text-gray-400">데이터 없음</span>';
+
+            // Chart.js 렌더링
+            const ctx = document.getElementById('costChart').getContext('2d');
+            if (currentChart) currentChart.destroy();
+
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catData,
+                        backgroundColor: bgColors,
+                        borderWidth: 2,
+                        borderColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed !== null) {
+                                        label += '₩' + context.parsed.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 타임라인 리스트 (D-7 이내만 표시)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const timelineContainer = document.getElementById('dashboard-timeline');
+            let tlHTML = '';
+
+            // 다음 지급일 계산 (billing_cycle 기반)
+            function getNextPaymentDate(sub) {
+                if (sub.next_billing) return new Date(sub.next_billing);
+                if (!sub.billing_cycle || !sub.start_date) return null;
+                const start = new Date(sub.start_date);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                let next = new Date(start);
+                const cycleMap = { '매일': 1, '매주': 7, '매월': 'month', '매년': 'year' };
+                const cycle = cycleMap[sub.billing_cycle];
+                if (!cycle) return null; // 기타 등 계산 불가
+                if (typeof cycle === 'number') {
+                    // 일/주 단위
+                    while (next < now) { next.setDate(next.getDate() + cycle); }
+                } else if (cycle === 'month') {
+                    while (next < now) { next.setMonth(next.getMonth() + 1); }
+                } else if (cycle === 'year') {
+                    while (next < now) { next.setFullYear(next.getFullYear() + 1); }
+                }
+                return next;
+            }
+
+            const upcomingSubs = allSubscriptions
+                .filter(sub => sub.active || sub.trial)
+                .map(sub => {
+                    const nb = getNextPaymentDate(sub);
+                    if (!nb) return null;
+                    nb.setHours(0, 0, 0, 0);
+                    const diff = Math.ceil((nb - today) / (1000 * 60 * 60 * 24));
+                    return { ...sub, _daysLeft: diff, _nextDate: nb.toISOString().split('T')[0] };
+                })
+                .filter(sub => sub && sub._daysLeft >= 0 && sub._daysLeft <= 7)
+                .sort((a, b) => a._daysLeft - b._daysLeft);
+
+            if (upcomingSubs.length === 0) {
+                tlHTML = '<div class="p-6 text-center text-sm text-gray-500 dark:text-dark-muted">7일 이내 결제 예정 내역이 없습니다. ✅</div>';
+            } else {
+                upcomingSubs.forEach(sub => {
+                    const priceStr = sub.currency === 'KRW' ? `₩${sub.price.toLocaleString()}` : `$${sub.price.toFixed(2)}`;
+                    let ddayHTML = '';
+                    if (sub._daysLeft === 0) ddayHTML = '<span class="text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-md min-w-[3.5rem] text-center inline-block">오늘!</span>';
+                    else if (sub._daysLeft <= 3) ddayHTML = `<span class="text-xs font-semibold text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-1 rounded-md min-w-[3.5rem] text-center inline-block">D-${sub._daysLeft}</span>`;
+                    else ddayHTML = `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md min-w-[3.5rem] text-center inline-block">D-${sub._daysLeft}</span>`;
+
+                    tlHTML += `
+                    <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-bg/50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            ${ddayHTML}
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">${escapeHTML(sub.name)}</p>
+                                <p class="text-xs text-gray-500 dark:text-dark-muted">${sub.category} • ${sub._nextDate}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">${priceStr}</span>
+                        </div>
+                    </div>`;
+                });
+            }
+            timelineContainer.innerHTML = tlHTML;
+
+            // 대시보드에 전체 구독 카드 표시
+            renderSubscriptionCards(allSubscriptions, 'dashboard-cards-container');
+        }
+
+        // 삭제
+        async function deleteSubscription(id, name) {
+            if (!confirm(`"${name}" 구독을 삭제할까요?`)) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/subscriptions/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('삭제 실패');
+                fetchSubscriptions();
+            } catch (e) {
+                alert('삭제 중 오류가 발생했습니다: ' + e.message);
+            }
+        }
+
+        // 해지예약 토글
+        function toggleCancel(id, name, shouldCancel) { cancelSubscription(id, name, !shouldCancel); }
+        async function cancelSubscription(id, name, isCurrentlyCancelled) {
+            const msg = isCurrentlyCancelled
+                ? `"${name}" 해지 예약을 취소할까요?`
+                : `"${name}" 구독을 해지 예약할까요?\n다음 결제일 이후 자동으로 비활성화됩니다.`;
+            if (!confirm(msg)) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/subscriptions/${id}/cancel`, { method: 'PATCH' });
+                if (!res.ok) throw new Error('해지예약 실패');
+                fetchSubscriptions();
+            } catch (e) {
+                alert('해지예약 처리 중 오류가 발생했습니다: ' + e.message);
+            }
+        }
+
+        // 모달 바깥 클릭 시 닫기
+        document.getElementById('subscription-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        let currentExchangeRate = null;
+
+        async function fetchExchangeRate() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/exchange-rate`);
+                const data = await res.json();
+                currentExchangeRate = data.rate;
+                console.log(`환율 로드: 1 USD = ${data.rate} KRW (${data.source})`);
+            } catch (e) {
+                console.warn('환율 조회 실패, 원화 표시 생략');
+            }
+        }
+
+        let currentTab = 'dashboard';
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+            if (currentChart && currentTab === 'dashboard') {
+                currentChart.data.datasets[0].borderColor = isDark ? '#1e293b' : '#ffffff';
+                currentChart.update();
+            }
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            ['dashboard', 'ai', 'general'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (btn && view) {
+                    if (t === tabId) {
+                        btn.className = 'px-4 py-2 text-sm font-medium border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 transition-colors whitespace-nowrap';
+                        view.classList.remove('hidden');
+                    } else {
+                        btn.className = 'px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-dark-muted hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap';
+                        view.classList.add('hidden');
+                    }
+                }
+            });
+            renderDataByTab();
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            renderCategoryOptions();
+
+            // 카테고리 변경 시 폼 전환
+            const catInput = document.getElementById('modal-category-input');
+            if (catInput) catInput.addEventListener('change', function () { updateFormForCategory(this.value); });
+
+            switchTab('dashboard');
+            await fetchExchangeRate();
+            fetchSubscriptions();
+        });
+    </script>
+</body>
+
+</html>

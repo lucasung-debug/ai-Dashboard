@@ -1,0 +1,137 @@
+[
+  {
+    "keyword": "스타벅스",
+    "category_medium": "식비",
+    "category_small": "카페/간식"
+  },
+  {
+    "keyword": "메가커피",
+    "category_medium": "식비",
+    "category_small": "카페/간식"
+  },
+  {
+    "keyword": "투썸",
+    "category_medium": "식비",
+    "category_small": "카페/간식"
+  },
+  {
+    "keyword": "이디야",
+    "category_medium": "식비",
+    "category_small": "카페/간식"
+  },
+  {
+    "keyword": "배달의민족",
+    "category_medium": "식비",
+    "category_small": "배달"
+  },
+  {
+    "keyword": "쿠팡이츠",
+    "category_medium": "식비",
+    "category_small": "배달"
+  },
+  {
+    "keyword": "요기요",
+    "category_medium": "식비",
+    "category_small": "배달"
+  },
+  {
+    "keyword": "쿠팡",
+    "category_medium": "생활용품",
+    "category_small": "생필품"
+  },
+  {
+    "keyword": "네이버페이",
+    "category_medium": "생활용품",
+    "category_small": "생필품"
+  },
+  {
+    "keyword": "다이소",
+    "category_medium": "생활용품",
+    "category_small": "생필품"
+  },
+  {
+    "keyword": "올리브영",
+    "category_medium": "의류/미용",
+    "category_small": "미용/화장품"
+  },
+  {
+    "keyword": "무신사",
+    "category_medium": "의류/미용",
+    "category_small": "의류"
+  },
+  {
+    "keyword": "지그재그",
+    "category_medium": "의류/미용",
+    "category_small": "의류"
+  },
+  {
+    "keyword": "CGV",
+    "category_medium": "문화/여가",
+    "category_small": "영화/공연"
+  },
+  {
+    "keyword": "메가박스",
+    "category_medium": "문화/여가",
+    "category_small": "영화/공연"
+  },
+  {
+    "keyword": "롯데시네마",
+    "category_medium": "문화/여가",
+    "category_small": "영화/공연"
+  },
+  {
+    "keyword": "넷플릭스",
+    "category_medium": "문화/여가",
+    "category_small": "구독서비스"
+  },
+  {
+    "keyword": "유튜브",
+    "category_medium": "문화/여가",
+    "category_small": "구독서비스"
+  },
+  {
+    "keyword": "카카오T",
+    "category_medium": "교통/차량",
+    "category_small": "택시"
+  },
+  {
+    "keyword": "타다",
+    "category_medium": "교통/차량",
+    "category_small": "택시"
+  },
+  {
+    "keyword": "GS칼텍스",
+    "category_medium": "교통/차량",
+    "category_small": "주유비"
+  },
+  {
+    "keyword": "SK에너지",
+    "category_medium": "교통/차량",
+    "category_small": "주유비"
+  },
+  {
+    "keyword": "교보문고",
+    "category_medium": "교육",
+    "category_small": "교재"
+  },
+  {
+    "keyword": "알라딘",
+    "category_medium": "교육",
+    "category_small": "교재"
+  },
+  {
+    "keyword": "급여",
+    "category_medium": "급여",
+    "category_small": "본봉"
+  },
+  {
+    "keyword": "월급",
+    "category_medium": "급여",
+    "category_small": "본봉"
+  },
+  {
+    "keyword": "상여",
+    "category_medium": "급여",
+    "category_small": "상여금"
+  }
+]

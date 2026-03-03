@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+httpx
+python-telegram-bot
+apscheduler
+openpyxl
+python-multipart
+
+xlrd

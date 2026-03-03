@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cash",
+    "name": "현금",
+    "type": "cash",
+    "icon": "💵",
+    "memo": ""
+  },
+  {
+    "id": "main_account",
+    "name": "주거래 통장",
+    "type": "account",
+    "icon": "🏦",
+    "memo": ""
+  },
+  {
+    "id": "credit_card",
+    "name": "신용카드",
+    "type": "credit_card",
+    "icon": "💳",
+    "memo": ""
+  },
+  {
+    "id": "debit_card",
+    "name": "체크카드",
+    "type": "debit_card",
+    "icon": "💳",
+    "memo": ""
+  }
+]
