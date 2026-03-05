@@ -1,0 +1,21 @@
+# Python virtual environment (48MB — 절대 읽지 않음)
+venv/
+.venv/
+
+# Compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Personal finance data (민감 데이터)
+backend/data/
+
+# Secrets
+backend/.env
+.env
+
+# Git internals
+.git/
+
+# Lock files
+package-lock.json

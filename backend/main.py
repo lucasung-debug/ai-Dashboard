@@ -318,9 +318,14 @@ async def get_exchange_rate():
         return {"rate": rate, "date": str(date.today()), "source": "live"}
     raise HTTPException(status_code=503, detail="환율 조회 실패")
 
-# ─── 스케줄러 (환율 + 구독 상태 자동 체크) ────────────────
+# ─── 스케줄러 + 텔레그램 봇 ──────────────────────────────
+_bot_app = None  # global reference for shutdown
+
+
 @app.on_event("startup")
 async def start_scheduler():
+    global _bot_app
+
     # 서버 시작 시 구독 상태 1회 체크
     check_subscription_status()
     # 가계부 기본 데이터 초기화
@@ -345,3 +350,30 @@ async def start_scheduler():
     )
     scheduler.start()
     print("[스케줄러 시작] 환율(16시) + 구독상태(00시) 자동 체크")
+
+    # ─── 텔레그램 봇 시작 ─────────────────────────────────
+    try:
+        from backend.telegram_bot import create_bot_application
+        _bot_app = create_bot_application()
+        if _bot_app:
+            await _bot_app.initialize()
+            await _bot_app.start()
+            await _bot_app.updater.start_polling(drop_pending_updates=True)
+            print("[텔레그램 봇 시작] polling 중...")
+        else:
+            print("[텔레그램 봇] 토큰 미설정 — 봇 비활성화")
+    except Exception as e:
+        print(f"[텔레그램 봇 시작 실패] {e}")
+
+
+@app.on_event("shutdown")
+async def stop_bot():
+    global _bot_app
+    if _bot_app:
+        try:
+            await _bot_app.updater.stop()
+            await _bot_app.stop()
+            await _bot_app.shutdown()
+            print("[텔레그램 봇 종료]")
+        except Exception as e:
+            print(f"[텔레그램 봇 종료 실패] {e}")

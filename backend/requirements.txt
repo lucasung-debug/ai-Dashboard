@@ -2,9 +2,9 @@ fastapi
 uvicorn
 python-dotenv
 httpx
-python-telegram-bot
+python-telegram-bot[webhooks]>=21.0
 apscheduler
 openpyxl
 python-multipart
-
+anthropic
 xlrd
