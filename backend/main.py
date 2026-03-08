@@ -54,6 +54,11 @@ app.include_router(ledger_router)
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 class SubscriptionModel(BaseModel):
     id: Optional[str] = None
     name: str
