@@ -377,3 +377,50 @@ async def stop_bot():
             print("[텔레그램 봇 종료]")
         except Exception as e:
             print(f"[텔레그램 봇 종료 실패] {e}")
+
+
+# ═══ CSV EXPORT ═══
+@app.get("/subscriptions/export/csv")
+async def export_subscriptions_csv():
+    """Export subscriptions to CSV format"""
+    import csv
+    from io import StringIO
+
+    try:
+        subs = load_subscriptions()
+
+        # Create CSV
+        output = StringIO()
+        writer = csv.writer(output, encoding='utf-8-sig')  # UTF-8 BOM for Excel
+
+        # Write header
+        writer.writerow(['서비스명', '카테고리', '요금', '통화', '다음결제일', '활성상태', '해지예약', '체험판', '결제주기'])
+
+        # Write subscriptions
+        for s in subs:
+            status = '활성' if s.get('active') else '비활성'
+            trial_status = '예' if s.get('trial') else '아니오'
+            cancel_status = '예약됨' if s.get('cancel_scheduled') else '-'
+
+            writer.writerow([
+                s.get('name', ''),
+                s.get('category', ''),
+                s.get('price', 0),
+                s.get('currency', 'KRW'),
+                s.get('next_billing', ''),
+                status,
+                cancel_status,
+                trial_status,
+                s.get('billing_cycle', '')
+            ])
+
+        csv_content = output.getvalue()
+
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(
+            iter([csv_content]),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": 'attachment; filename="구독목록.csv"'}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CSV export failed: {str(e)}")
