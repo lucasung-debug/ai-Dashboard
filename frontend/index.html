@@ -36,6 +36,7 @@
         <button class="tab-btn" data-tab-btn="list" onclick="switchTab('list')">내역</button>
         <button class="tab-btn" data-tab-btn="upload" onclick="switchTab('upload')">엑셀 업로드</button>
         <button class="tab-btn" data-tab-btn="settings" onclick="switchTab('settings')">설정</button>
+        <a href="reports.html" class="tab-btn" style="text-decoration: none;">📊 보고서 →</a>
         <a href="fixed.html" class="tab-btn ml-auto" style="text-decoration: none;">📺 고정비 관리 →</a>
     </nav>
 
@@ -257,6 +258,91 @@
                     <button onclick="exportTransactionsCsv()" class="w-full py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">📊 거래 내역 CSV 다운로드</button>
                 </div>
             </div>
+
+            <!-- ═══ CATEGORY BUDGETS SECTION ═══ -->
+            <div id="category-budgets-section" class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">📊 카테고리별 예산</p>
+                    <button onclick="openCategoryBudgetModal()" class="text-xs text-primary-9 hover:underline">+ 예산 추가</button>
+                </div>
+                <div id="category-budgets-container" class="space-y-3">
+                    <p class="text-xs text-slate-9">설정된 예산이 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- CATEGORY BUDGET MODAL -->
+            <div id="category-budget-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeCategoryBudgetModal()">
+                <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+                    <div class="p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold">예산 설정</h3>
+                            <button onclick="closeCategoryBudgetModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                        </div>
+                        <form id="category-budget-form" onsubmit="saveCategoryBudget(event)">
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">카테고리</label>
+                                <select id="budget-category-select" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" required>
+                                    <option value="">카테고리 선택</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">예산 금액 (₩)</label>
+                                <input type="number" id="budget-amount-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums" min="0" step="1000" required />
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">저장</button>
+                                <button type="button" class="flex-1 py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-9 rounded-lg text-sm font-medium transition-colors" onclick="closeCategoryBudgetModal()">취소</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SAVINGS GOALS SECTION ═══ -->
+            <div id="savings-goals-section" class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">🎯 절약 목표</p>
+                    <button onclick="openSavingsGoalModal()" class="text-xs text-primary-9 hover:underline">+ 목표 추가</button>
+                </div>
+                <div id="savings-goals-container" class="space-y-3">
+                    <p class="text-xs text-slate-9">설정된 목표가 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- SAVINGS GOAL MODAL -->
+            <div id="savings-goal-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSavingsGoalModal()">
+                <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+                    <div class="p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold">목표 추가</h3>
+                            <button onclick="closeSavingsGoalModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                        </div>
+                        <form id="savings-goal-form" onsubmit="saveSavingsGoal(event)">
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">목표 이름</label>
+                                <input type="text" id="goal-name-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" placeholder="예: 여행 저축" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">목표 금액 (₩)</label>
+                                <input type="number" id="goal-target-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums" min="0" step="10000" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">기한</label>
+                                <input type="date" id="goal-deadline-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">설명 (선택)</label>
+                                <textarea id="goal-description-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" rows="2" placeholder="목표에 대한 설명"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">저장</button>
+                                <button type="button" class="flex-1 py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-9 rounded-lg text-sm font-medium transition-colors" onclick="closeSavingsGoalModal()">취소</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </section>
     </main>
 
@@ -669,6 +755,261 @@
         let calcExpr = '';
         document.addEventListener('DOMContentLoaded', () => { document.getElementById('btn-calc').addEventListener('click', () => document.getElementById('calc-modal').classList.remove('hidden')); const keys = ['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '−', 'C', '0', '.', '=']; const grid = document.getElementById('calc-keys'); keys.forEach(k => { const btn = document.createElement('button'); btn.textContent = k; btn.className = 'py-3 rounded-xl text-sm font-medium transition-colors ' + (['+', '−', '×', '÷', '='].includes(k) ? 'bg-primary-9 text-white hover:bg-primary-10' : k === 'C' ? 'bg-ruby-9/20 text-ruby-11 hover:bg-ruby-9/30' : 'bg-slate-3 dark:bg-slateD-4 hover:bg-slate-4 dark:hover:bg-slateD-5'); btn.onclick = () => calcPress(k); grid.appendChild(btn); }); });
         function calcPress(k) { const disp = document.getElementById('calc-display'); if (k === 'C') { calcExpr = ''; disp.value = '0'; return; } if (k === '=') { try { disp.value = eval(calcExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')) || 0; } catch { disp.value = 'Error'; } return; } calcExpr += k; disp.value = calcExpr; }
+        // ═══ CATEGORY BUDGETS & SAVINGS GOALS ═══
+        let currentCategoryBudgets = [];
+        let currentSavingsGoals = [];
+
+        async function loadCategoryBudgets(month = null) {
+            if (month === null) month = new Date().toISOString().slice(0, 7);
+            try {
+                const response = await apiGet(`/budgets/categories?month=${month}`);
+                currentCategoryBudgets = response || [];
+                renderCategoryBudgetsTable();
+            } catch (error) {
+                console.error('Failed to load category budgets:', error);
+                showWarning('카테고리 예산 로드 실패');
+            }
+        }
+
+        function renderCategoryBudgetsTable() {
+            const container = document.getElementById('category-budgets-container');
+            const month = new Date().toISOString().slice(0, 7);
+
+            if (currentCategoryBudgets.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-9">설정된 예산이 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = currentCategoryBudgets.map(budget => {
+                const spent = (data || []).filter(t => t.month === month && t.category_medium === budget.category).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                const remaining = budget.amount - spent;
+                const usagePercent = Math.min((spent / budget.amount) * 100, 100);
+                const statusClass = spent >= budget.amount ? 'bg-ruby-9' : spent >= budget.amount * 0.8 ? 'bg-amber-9' : 'bg-primary-9';
+
+                return `
+                <div class="border border-slate-4 dark:border-slateD-4 rounded-xl p-3 bg-slate-1 dark:bg-slateD-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold">${budget.category}</span>
+                        <span class="text-[10px] text-slate-9">₩${spent.toLocaleString()} / ₩${budget.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="w-full bg-slate-3 dark:bg-slateD-3 rounded-full h-2 mb-2">
+                        <div class="h-2 rounded-full ${statusClass}" style="width: ${usagePercent}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-slate-9">${Math.round(usagePercent)}% 사용</span>
+                        <button class="text-[10px] text-primary-9 hover:underline" onclick="editCategoryBudget('${budget.id}')">수정</button>
+                        <button class="text-[10px] text-ruby-9 hover:underline" onclick="deleteCategoryBudget('${budget.id}')">삭제</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            checkBudgetAlerts();
+        }
+
+        function editCategoryBudget(budgetId) {
+            const budget = currentCategoryBudgets.find(b => b.id === budgetId);
+            if (!budget) return;
+            document.getElementById('budget-category-select').value = budget.category;
+            document.getElementById('budget-amount-input').value = budget.amount;
+            document.getElementById('category-budget-form').dataset.budgetId = budgetId;
+            openCategoryBudgetModal();
+        }
+
+        async function saveCategoryBudget(event) {
+            event.preventDefault();
+            const month = new Date().toISOString().slice(0, 7);
+            const category = document.getElementById('budget-category-select').value;
+            const amount = parseFloat(document.getElementById('budget-amount-input').value);
+            const budgetId = document.getElementById('category-budget-form').dataset.budgetId || `${month}_${category}`;
+
+            try {
+                await apiPost('/budgets/categories', {
+                    id: budgetId, month, category, amount, currency: 'KRW'
+                });
+                closeCategoryBudgetModal();
+                loadCategoryBudgets(month);
+                showSuccess('예산이 저장되었습니다.');
+            } catch (error) {
+                showError('예산 저장 실패');
+            }
+        }
+
+        async function deleteCategoryBudget(budgetId) {
+            if (!confirm('이 예산을 삭제하시겠습니까?')) return;
+            try {
+                await apiDelete(`/budgets/categories/${budgetId}`);
+                await loadCategoryBudgets();
+                showSuccess('예산이 삭제되었습니다.');
+            } catch (error) {
+                showError('예산 삭제 실패');
+            }
+        }
+
+        function openCategoryBudgetModal() {
+            initCategoryBudgetForm();
+            document.getElementById('category-budget-modal').classList.remove('hidden');
+        }
+
+        function closeCategoryBudgetModal() {
+            document.getElementById('category-budget-modal').classList.add('hidden');
+            document.getElementById('category-budget-form').reset();
+            delete document.getElementById('category-budget-form').dataset.budgetId;
+        }
+
+        function initCategoryBudgetForm() {
+            const select = document.getElementById('budget-category-select');
+            if (select.options.length > 1) return; // Already initialized
+            const categories = ['식비', '교통', '의류', '주거/통신', '여가/쇼핑', '의료/건강', '자동차', '교육', '구독서비스', '기타'];
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function checkBudgetAlerts() {
+            const month = new Date().toISOString().slice(0, 7);
+            currentCategoryBudgets.forEach(budget => {
+                const spent = (data || []).filter(t => t.month === month && t.category_medium === budget.category).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                const usagePercent = spent / budget.amount;
+                if (usagePercent >= 1.0) showDanger(`⚠️ ${budget.category} 예산이 초과되었습니다!`);
+                else if (usagePercent >= 0.8) showWarning(`⚠️ ${budget.category} 예산의 80%에 도달했습니다.`);
+            });
+        }
+
+        async function loadSavingsGoals() {
+            try {
+                const response = await apiGet('/savings-goals');
+                currentSavingsGoals = response || [];
+                renderSavingsGoalsCards();
+            } catch (error) {
+                console.error('Failed to load savings goals:', error);
+                showWarning('절약 목표 로드 실패');
+            }
+        }
+
+        function renderSavingsGoalsCards() {
+            const container = document.getElementById('savings-goals-container');
+
+            if (currentSavingsGoals.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-9">설정된 목표가 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = currentSavingsGoals.map(goal => {
+                const progressPercent = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
+                const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+                const statusClass = progressPercent >= 100 ? 'bg-primary-9' : 'bg-amber-9';
+                const statusText = progressPercent >= 100 ? '달성!' : `${daysLeft}일 남음`;
+
+                return `
+                <div class="border border-slate-4 dark:border-slateD-4 rounded-xl p-3 bg-slate-1 dark:bg-slateD-1">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <p class="text-xs font-semibold">${goal.name}</p>
+                            <p class="text-[10px] text-slate-9">${goal.description || ''}</p>
+                        </div>
+                        <button class="text-slate-9 hover:text-ruby-9" onclick="deleteSavingsGoal('${goal.id}')">&times;</button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span>₩${goal.current_amount.toLocaleString()} / ₩${goal.target_amount.toLocaleString()}</span>
+                            <span class="font-semibold ${progressPercent >= 100 ? 'text-primary-9' : 'text-amber-9'}">${statusText}</span>
+                        </div>
+                        <div class="w-full bg-slate-3 dark:bg-slateD-3 rounded-full h-2">
+                            <div class="h-2 rounded-full ${statusClass}" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="number" class="text-[10px] flex-1 bg-slate-2 dark:bg-slateD-3 border border-slate-4 rounded px-2 py-1" placeholder="추가" data-goal-id="${goal.id}" />
+                            <button class="text-[10px] px-2 py-1 bg-primary-9 text-white rounded hover:bg-primary-10" onclick="addGoalAmount(event)">추가</button>
+                            <button class="text-[10px] px-2 py-1 bg-slate-3 dark:bg-slateD-3 rounded hover:bg-slate-4" onclick="editSavingsGoal('${goal.id}')">수정</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function addGoalAmount(event) {
+            const input = event.target.previousElementSibling;
+            const goalId = input.dataset.goalId;
+            const addAmount = parseFloat(input.value);
+            if (!addAmount || addAmount <= 0) return;
+
+            const goal = currentSavingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            try {
+                await apiPut(`/savings-goals/${goalId}`, { ...goal, current_amount: goal.current_amount + addAmount });
+                await loadSavingsGoals();
+                showSuccess('목표 진행이 업데이트되었습니다.');
+            } catch (error) {
+                showError('목표 업데이트 실패');
+            }
+        }
+
+        function editSavingsGoal(goalId) {
+            const goal = currentSavingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+            document.getElementById('goal-name-input').value = goal.name;
+            document.getElementById('goal-target-input').value = goal.target_amount;
+            document.getElementById('goal-deadline-input').value = goal.deadline;
+            document.getElementById('goal-description-input').value = goal.description || '';
+            document.getElementById('savings-goal-form').dataset.goalId = goalId;
+            openSavingsGoalModal();
+        }
+
+        async function saveSavingsGoal(event) {
+            event.preventDefault();
+            const goalId = document.getElementById('savings-goal-form').dataset.goalId;
+            const name = document.getElementById('goal-name-input').value;
+            const targetAmount = parseFloat(document.getElementById('goal-target-input').value);
+            const deadline = document.getElementById('goal-deadline-input').value;
+            const description = document.getElementById('goal-description-input').value;
+
+            try {
+                if (goalId) {
+                    const goal = currentSavingsGoals.find(g => g.id === goalId);
+                    await apiPut(`/savings-goals/${goalId}`, {
+                        id: goalId, name, target_amount: targetAmount, current_amount: goal.current_amount,
+                        currency: 'KRW', deadline, created_at: goal.created_at, description
+                    });
+                } else {
+                    await apiPost('/savings-goals', {
+                        name, target_amount: targetAmount, current_amount: 0,
+                        currency: 'KRW', deadline, description
+                    });
+                }
+                closeSavingsGoalModal();
+                await loadSavingsGoals();
+                showSuccess('목표가 저장되었습니다.');
+            } catch (error) {
+                showError('목표 저장 실패');
+            }
+        }
+
+        async function deleteSavingsGoal(goalId) {
+            if (!confirm('이 목표를 삭제하시겠습니까?')) return;
+            try {
+                await apiDelete(`/savings-goals/${goalId}`);
+                await loadSavingsGoals();
+                showSuccess('목표가 삭제되었습니다.');
+            } catch (error) {
+                showError('목표 삭제 실패');
+            }
+        }
+
+        function openSavingsGoalModal() {
+            document.getElementById('savings-goal-modal').classList.remove('hidden');
+        }
+
+        function closeSavingsGoalModal() {
+            document.getElementById('savings-goal-modal').classList.add('hidden');
+            document.getElementById('savings-goal-form').reset();
+            delete document.getElementById('savings-goal-form').dataset.goalId;
+        }
+
         // Initialize app with new theme system
         document.addEventListener('DOMContentLoaded', async () => {
             // Load old theme preference and apply
@@ -685,6 +1026,15 @@
             changeThemeColor(color);
             renderCategoryEmojis();
             loadData();
+
+            // Load category budgets and savings goals when settings tab is opened
+            const settingsTab = document.querySelector('[data-tab-btn="settings"]');
+            if (settingsTab) {
+                settingsTab.addEventListener('click', () => {
+                    loadCategoryBudgets();
+                    loadSavingsGoals();
+                });
+            }
         });
     </script>
 
