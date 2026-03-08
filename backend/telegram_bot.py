@@ -37,8 +37,8 @@ logger = logging.getLogger(__name__)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# Ledger API base (same process, localhost)
-LEDGER_API_BASE = "http://localhost:8000/api/ledger"
+# Ledger API base (same process)
+LEDGER_API_BASE = os.getenv("LEDGER_API_BASE", "http://localhost:8000/api/ledger")
 
 # ─── ConversationHandler states ────────────────────────────
 CONFIRMING = 0

@@ -9,7 +9,7 @@
  * API Configuration
  */
 const API_CONFIG = {
-  baseURL: 'http://localhost:8000/api',
+  baseURL: '/api',
   timeout: 30000, // 30 seconds
   retryAttempts: 3,
   retryDelay: 1000, // 1 second, exponential backoff
