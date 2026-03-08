@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 # ─── Data Directory ───────────────────────────────────────
@@ -28,6 +29,8 @@ CATEGORIES_FILE = DATA_DIR / "categories.json"
 CATEGORIZATION_RULES_FILE = DATA_DIR / "categorization_rules.json"
 EXCHANGE_RATES_FILE = DATA_DIR / "exchange_rates.json"
 BUDGETS_FILE = DATA_DIR / "budgets.json"
+CATEGORY_BUDGETS_FILE = DATA_DIR / "category_budgets.json"
+SAVINGS_GOALS_FILE = DATA_DIR / "savings_goals.json"
 
 router = APIRouter(prefix="/api/ledger", tags=["ledger"])
 
@@ -65,6 +68,25 @@ class BudgetModel(BaseModel):
     month: str  # YYYY-MM
     amount: float
     currency: str = "KRW"
+
+
+class CategoryBudgetModel(BaseModel):
+    id: Optional[str] = None
+    month: str  # YYYY-MM
+    category: str  # category_medium 값
+    amount: float
+    currency: str = "KRW"
+
+
+class SavingsGoalModel(BaseModel):
+    id: Optional[str] = None
+    name: str
+    target_amount: float
+    current_amount: float = 0
+    currency: str = "KRW"
+    deadline: str  # YYYY-MM-DD
+    created_at: Optional[str] = None
+    description: Optional[str] = ""
 
 
 class CategorizationRuleModel(BaseModel):
@@ -765,3 +787,106 @@ async def export_transactions_csv(month: str = None, transaction_type: str = "al
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"CSV export failed: {str(e)}")
+
+
+# ═══ CATEGORY BUDGETS ═══
+@router.get("/budgets/categories")
+async def get_category_budgets(month: str = None) -> List[Dict]:
+    """
+    Get category budgets for a specific month.
+    If month is not provided, return budgets for the current month.
+    """
+    if month is None:
+        month = datetime.now().strftime("%Y-%m")
+
+    budgets = _load_json(CATEGORY_BUDGETS_FILE, [])
+    return [b for b in budgets if b.get("month") == month]
+
+
+@router.post("/budgets/categories")
+async def upsert_category_budget(budget: CategoryBudgetModel):
+    """
+    Create or update a category budget.
+    Uses month + category combination as unique key.
+    """
+    budgets = _load_json(CATEGORY_BUDGETS_FILE, [])
+    key = f"{budget.month}_{budget.category}"
+
+    # Check if exists
+    idx = -1
+    for i, b in enumerate(budgets):
+        if (b.get("id") == key or
+            (b.get("month") == budget.month and b.get("category") == budget.category)):
+            idx = i
+            break
+
+    if idx >= 0:
+        budgets[idx] = budget.dict()
+    else:
+        budget.id = key
+        budgets.append(budget.dict())
+
+    _save_json(CATEGORY_BUDGETS_FILE, budgets)
+    return {"status": "ok", "budget": budget.dict()}
+
+
+@router.delete("/budgets/categories/{budget_id}")
+async def delete_category_budget(budget_id: str):
+    """Delete a category budget by ID."""
+    budgets = _load_json(CATEGORY_BUDGETS_FILE, [])
+    budgets = [b for b in budgets if b.get("id") != budget_id]
+    _save_json(CATEGORY_BUDGETS_FILE, budgets)
+    return {"status": "deleted"}
+
+
+# ═══ SAVINGS GOALS ═══
+@router.get("/savings-goals")
+async def get_savings_goals() -> List[Dict]:
+    """Get all savings goals."""
+    return _load_json(SAVINGS_GOALS_FILE, [])
+
+
+@router.post("/savings-goals")
+async def create_savings_goal(goal: SavingsGoalModel):
+    """Create a new savings goal."""
+    goals = _load_json(SAVINGS_GOALS_FILE, [])
+
+    goal.id = str(uuid.uuid4())
+    goal.created_at = datetime.now().isoformat()
+
+    goals.append(goal.dict())
+    _save_json(SAVINGS_GOALS_FILE, goals)
+    return {"status": "ok", "goal": goal.dict()}
+
+
+@router.put("/savings-goals/{goal_id}")
+async def update_savings_goal(goal_id: str, goal: SavingsGoalModel):
+    """Update an existing savings goal."""
+    goals = _load_json(SAVINGS_GOALS_FILE, [])
+
+    idx = -1
+    for i, g in enumerate(goals):
+        if g.get("id") == goal_id:
+            idx = i
+            break
+
+    if idx < 0:
+        raise HTTPException(status_code=404, detail="Savings goal not found")
+
+    # Keep original ID and created_at
+    goal.id = goal_id
+    if not goal.created_at:
+        goal.created_at = goals[idx].get("created_at")
+
+    goals[idx] = goal.dict()
+    _save_json(SAVINGS_GOALS_FILE, goals)
+    return {"status": "ok", "goal": goal.dict()}
+
+
+@router.delete("/savings-goals/{goal_id}")
+async def delete_savings_goal(goal_id: str):
+    """Delete a savings goal by ID."""
+    goals = _load_json(SAVINGS_GOALS_FILE, [])
+    goals = [g for g in goals if g.get("id") != goal_id]
+    _save_json(SAVINGS_GOALS_FILE, goals)
+    return {"status": "deleted"}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재무 보고서 - ai-Dashboard</title>
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="transition-colors pb-20 md:pb-0">
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-content">
+            <div class="flex items-center gap-3">
+                <a href="dashboard.html" class="text-slate-9 hover:text-slate-12 dark:text-slateD-9 dark:hover:text-slateD-12" title="돌아가기">←</a>
+                <h1 class="header-logo">
+                    📊 재무 보고서
+                </h1>
+            </div>
+
+            <!-- Top Navigation Links -->
+            <nav class="header-nav">
+                <a href="dashboard.html">통합대시보드</a>
+                <a href="index.html">가계부</a>
+                <a href="fixed.html">고정비</a>
+            </nav>
+
+            <!-- Action Buttons -->
+            <div class="header-actions">
+                <button id="theme-toggle-btn" title="테마 전환" class="header-action-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="container-compact">
+
+        <!-- Page Title & Controls -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">재무 보고서</h2>
+                    <p class="text-slate-9 dark:text-slateD-9 text-sm">월별 및 연간 재무 현황을 분석합니다.</p>
+                </div>
+
+                <!-- Export Button -->
+                <button id="btn-export-csv" class="btn-secondary" title="CSV 내보내기">
+                    ⬇️ CSV 내보내기
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ TAB NAVIGATION ═══ -->
+        <section class="mb-8 border-b border-slate-4 dark:border-slateD-4">
+            <div class="flex gap-0">
+                <button class="tab-btn active" data-report-tab="monthly" onclick="switchReportTab('monthly')">
+                    📅 월간 보고서
+                </button>
+                <button class="tab-btn" data-report-tab="annual" onclick="switchReportTab('annual')">
+                    📈 연간 보고서
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ MONTHLY REPORT VIEW ═══ -->
+        <section id="view-monthly-report" class="space-y-8 anim-fade">
+
+            <!-- Month Navigation -->
+            <div class="flex items-center justify-between gap-4">
+                <button id="btn-prev-report-month" class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3">
+                    ◀ 이전 월
+                </button>
+                <h3 id="report-month-label" class="text-lg font-semibold text-center flex-1">
+                    2026년 3월
+                </h3>
+                <button id="btn-next-report-month" class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3">
+                    다음 월 ▶
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="card">
+                    <p class="text-[11px] font-medium text-success-11 mb-2">수입</p>
+                    <p class="text-lg md:text-2xl font-bold text-success-12 tabular-nums" id="monthly-income">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-danger-11 mb-2">지출</p>
+                    <p class="text-lg md:text-2xl font-bold text-danger-11 tabular-nums" id="monthly-expense">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-primary-11 mb-2">잔액</p>
+                    <p class="text-lg md:text-2xl font-bold text-primary-12 tabular-nums" id="monthly-balance">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-amber-11 mb-2">고정비</p>
+                    <p class="text-lg md:text-2xl font-bold text-amber-12 tabular-nums" id="monthly-fixed">₩0</p>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Budget vs Actual Chart -->
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-4">📊 예산 vs 실제 지출</h4>
+                    <canvas id="chart-budget-vs-actual" height="80"></canvas>
+                </div>
+
+                <!-- Category Breakdown Chart -->
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-4">🎯 카테고리별 지출</h4>
+                    <canvas id="chart-category-breakdown" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Ranking Table -->
+            <div class="card">
+                <h4 class="text-sm font-semibold mb-4">💹 카테고리 순위</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-slate-4 dark:border-slateD-4">
+                            <tr class="text-left text-slate-9 dark:text-slateD-9 text-xs font-semibold">
+                                <th class="pb-3">카테고리</th>
+                                <th class="pb-3 text-right">금액</th>
+                                <th class="pb-3 text-right">비율</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthly-category-table">
+                            <tr><td colspan="3" class="py-4 text-center text-slate-9">데이터 로드 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ═══ ANNUAL REPORT VIEW ═══ -->
+        <section id="view-annual-report" class="space-y-8 hidden">
+
+            <!-- Year Navigation -->
+            <div class="flex items-center justify-between gap-4">
+                <button id="btn-prev-year" class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3">
+                    ◀ 이전 연도
+                </button>
+                <h3 id="report-year-label" class="text-lg font-semibold text-center flex-1">
+                    2026년
+                </h3>
+                <button id="btn-next-year" class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3">
+                    다음 연도 ▶
+                </button>
+            </div>
+
+            <!-- Annual Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="card">
+                    <p class="text-[11px] font-medium text-success-11 mb-2">연간 수입</p>
+                    <p class="text-lg md:text-2xl font-bold text-success-12 tabular-nums" id="annual-income">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-danger-11 mb-2">연간 지출</p>
+                    <p class="text-lg md:text-2xl font-bold text-danger-11 tabular-nums" id="annual-expense">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-primary-11 mb-2">연간 잔액</p>
+                    <p class="text-lg md:text-2xl font-bold text-primary-12 tabular-nums" id="annual-balance">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-slate-11 mb-2">월평균</p>
+                    <p class="text-lg md:text-2xl font-bold text-slate-12 tabular-nums" id="annual-monthly-avg">₩0</p>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monthly Trend Chart -->
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-4">📈 월별 추이 (수입/지출)</h4>
+                    <canvas id="chart-monthly-trend" height="80"></canvas>
+                </div>
+
+                <!-- Fixed vs Variable Chart -->
+                <div class="card">
+                    <h4 class="text-sm font-semibold mb-4">🔄 고정비 vs 변동비</h4>
+                    <canvas id="chart-fixed-variable" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Annual Category Ranking -->
+            <div class="card">
+                <h4 class="text-sm font-semibold mb-4">💹 연간 카테고리 순위</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-slate-4 dark:border-slateD-4">
+                            <tr class="text-left text-slate-9 dark:text-slateD-9 text-xs font-semibold">
+                                <th class="pb-3">카테고리</th>
+                                <th class="pb-3 text-right">금액</th>
+                                <th class="pb-3 text-right">비율</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annual-category-table">
+                            <tr><td colspan="3" class="py-4 text-center text-slate-9">데이터 로드 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ═══ BOTTOM NAVIGATION (Mobile) ═══ -->
+    <nav id="bottom-nav" class="bottom-nav md:hidden">
+        <a href="dashboard.html" class="bottom-nav-item" title="대시보드">📊</a>
+        <a href="index.html" class="bottom-nav-item" title="가계부">💰</a>
+        <a href="reports.html" class="bottom-nav-item active" title="보고서">📈</a>
+        <a href="fixed.html" class="bottom-nav-item" title="고정비">📺</a>
+    </nav>
+
+    <!-- ═══ SCRIPTS ═══ -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
+    <script src="assets/scripts/data-manager.js"></script>
+    <script src="assets/scripts/charts-dashboard.js"></script>
+    <script src="assets/scripts/reports.js"></script>
+
+</body>
+
+</html>
