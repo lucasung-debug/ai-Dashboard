@@ -13,12 +13,11 @@ COPY frontend/ ./frontend/
 # Create data directory
 RUN mkdir -p /app/backend/data
 
-# Expose port
+# Expose port (Railway will override with $PORT)
 EXPOSE 8000
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
 
-# Start server
-CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start server - uses Railway's $PORT env var (default 8000)
+CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
