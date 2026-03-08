@@ -732,7 +732,7 @@ async def get_dashboard_summary(request: DashboardSummaryRequest):
 
 
 # ═══ CSV EXPORT ═══
-@app.get("/ledger/export/csv")
+@router.get("/ledger/export/csv")
 async def export_transactions_csv(month: str = None, transaction_type: str = "all"):
     """
     Export transactions to CSV format.
