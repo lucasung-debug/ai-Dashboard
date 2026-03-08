@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 대시보드 - ai-Dashboard</title>
+
+    <!-- CSS Stylesheets - Core Design System -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="transition-colors pb-20 md:pb-0">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER COMPONENT
+         ════════════════════════════════════════════════════════════ -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-logo">
+                💰 ai-Dashboard
+            </h1>
+
+            <!-- Top Navigation Links (Desktop) -->
+            <nav class="header-nav">
+                <a href="dashboard.html" class="active">통합대시보드</a>
+                <a href="index.html">가계부</a>
+                <a href="fixed.html">고정비</a>
+            </nav>
+
+            <!-- Action Buttons (Top Right) -->
+            <div class="header-actions">
+                <button id="btn-search" title="검색" class="header-action-btn">🔍</button>
+                <button id="theme-toggle-btn" title="테마 전환" class="header-action-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ════════════════════════════════════════════════════════════ -->
+    <main class="container-compact">
+
+        <!-- Section: Page Title & Month Selector -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">통합 대시보드</h1>
+                    <p class="text-slate-9 dark:text-slateD-9">전체 재무 현황을 한눈에 파악하세요.</p>
+                </div>
+
+                <!-- Month Picker -->
+                <div class="flex gap-2 items-center">
+                    <button id="btn-prev-month" class="btn-secondary" title="이전 월">◀</button>
+                    <input type="month" id="month-picker" class="form-input w-40" value="">
+                    <button id="btn-next-month" class="btn-secondary" title="다음 월">▶</button>
+                    <button id="btn-today" class="btn-secondary hidden md:inline" title="오늘">오늘</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Summary Cards (KPI) -->
+        <section class="mb-8">
+            <h2 class="text-sm font-medium text-slate-9 dark:text-slateD-9 mb-3 uppercase">월별 요약</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <!-- Total Assets Card -->
+                <div class="card">
+                    <p class="text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-2">전체 자산</p>
+                    <p class="text-lg md:text-2xl font-bold text-slate-12 dark:text-slateD-12 tabular-nums" id="summary-total-assets">₩0</p>
+                    <p class="text-[10px] text-slate-9 dark:text-slateD-9 mt-1" id="summary-assets-secondary"></p>
+                </div>
+
+                <!-- Monthly Income Card -->
+                <div class="card">
+                    <p class="text-[11px] font-medium text-success-11 mb-2">이달 수입</p>
+                    <p class="text-lg md:text-2xl font-bold text-success-12 tabular-nums" id="summary-monthly-income">₩0</p>
+                    <p class="text-[10px] text-slate-9 dark:text-slateD-9 mt-1" id="summary-income-secondary"></p>
+                </div>
+
+                <!-- Monthly Expense Card -->
+                <div class="card">
+                    <p class="text-[11px] font-medium text-danger-9 mb-2">이달 지출</p>
+                    <p class="text-lg md:text-2xl font-bold text-danger-11 tabular-nums" id="summary-monthly-expense">₩0</p>
+                    <p class="text-[10px] text-slate-9 dark:text-slateD-9 mt-1" id="summary-expense-secondary"></p>
+                </div>
+
+                <!-- Monthly Balance Card -->
+                <div class="card">
+                    <p class="text-[11px] font-medium text-primary-9 mb-2">순 잔액</p>
+                    <p class="text-lg md:text-2xl font-bold text-primary-9 tabular-nums" id="summary-monthly-balance">₩0</p>
+                    <p class="text-[10px] text-slate-9 dark:text-slateD-9 mt-1">수입 - 지출</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Quick Actions -->
+        <section class="mb-8 flex flex-wrap gap-3">
+            <button id="btn-add-transaction" class="btn-primary" onclick="openModal('modal-add-transaction')">➕ 거래 추가</button>
+            <button id="btn-add-subscription" class="btn-secondary" onclick="openModal('modal-add-subscription')">📺 구독 추가</button>
+            <button id="btn-settings" class="btn-ghost" onclick="openModal('modal-settings')">⚙️ 설정</button>
+            <span class="flex-1"></span>
+            <span class="text-xs text-slate-9 dark:text-slateD-9">마지막 업데이트: <span id="last-update-time">방금</span></span>
+        </section>
+
+        <!-- Section: Charts Grid (2x2) -->
+        <section class="mb-8">
+            <h2 class="text-sm font-medium text-slate-9 dark:text-slateD-9 mb-3 uppercase">시각화</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Chart 1: Category Pie Chart -->
+                <div class="card">
+                    <h3 class="text-sm font-semibold text-slate-12 dark:text-slateD-12 mb-4">카테고리별 지출</h3>
+                    <div class="relative h-48 md:h-64">
+                        <canvas id="chart-category" class="w-full"></canvas>
+                    </div>
+                    <p class="text-[11px] text-slate-9 dark:text-slateD-9 mt-3 text-center">총 지출: <span id="chart-category-total">₩0</span></p>
+                </div>
+
+                <!-- Chart 2: Fixed vs Variable Expense -->
+                <div class="card">
+                    <h3 class="text-sm font-semibold text-slate-12 dark:text-slateD-12 mb-4">고정비 vs 변동비</h3>
+                    <div class="relative h-48 md:h-64">
+                        <canvas id="chart-fixed-variable" class="w-full"></canvas>
+                    </div>
+                    <p class="text-[11px] text-slate-9 dark:text-slateD-9 mt-3 text-center">
+                        <span id="chart-fixed-label">고정비: ₩0</span> |
+                        <span id="chart-variable-label">변동비: ₩0</span>
+                    </p>
+                </div>
+
+                <!-- Chart 3: Daily Trend -->
+                <div class="card">
+                    <h3 class="text-sm font-semibold text-slate-12 dark:text-slateD-12 mb-4">일별 지출 추이</h3>
+                    <div class="relative h-48 md:h-64">
+                        <canvas id="chart-daily-trend" class="w-full"></canvas>
+                    </div>
+                    <p class="text-[11px] text-slate-9 dark:text-slateD-9 mt-3 text-center">최근 30일 지출</p>
+                </div>
+
+                <!-- Chart 4: Subscription Timeline / List -->
+                <div class="card">
+                    <h3 class="text-sm font-semibold text-slate-12 dark:text-slateD-12 mb-4">고정비 일정</h3>
+                    <div id="subscription-timeline" class="space-y-2 max-h-64 overflow-y-auto">
+                        <!-- Populated by JavaScript -->
+                        <p class="text-center text-slate-9 dark:text-slateD-9 text-sm py-8">데이터 로드 중...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Fixed Cost Summary -->
+        <section class="mb-8">
+            <h2 class="text-sm font-medium text-slate-9 dark:text-slateD-9 mb-3 uppercase">고정비 요약</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card">
+                    <p class="text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-2">활성 구독</p>
+                    <p class="text-2xl font-bold text-slate-12 dark:text-slateD-12" id="summary-active-subscriptions">0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-2">월 총 고정비</p>
+                    <p class="text-2xl font-bold text-primary-9 tabular-nums" id="summary-total-fixed-cost">₩0</p>
+                </div>
+                <div class="card">
+                    <p class="text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-2">다음 결제</p>
+                    <p class="text-lg font-bold text-slate-12 dark:text-slateD-12" id="summary-next-billing">예정 없음</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         BOTTOM NAVIGATION (Mobile Only)
+         ════════════════════════════════════════════════════════════ -->
+    <nav class="bottom-nav md:hidden">
+        <a href="dashboard.html" class="bottom-nav-item active" title="대시보드">
+            <span class="text-xl">📊</span>
+            <span class="text-[10px]">대시</span>
+        </a>
+        <a href="index.html" class="bottom-nav-item" title="가계부">
+            <span class="text-xl">💰</span>
+            <span class="text-[10px]">가계부</span>
+        </a>
+        <a href="fixed.html" class="bottom-nav-item" title="고정비">
+            <span class="text-xl">📺</span>
+            <span class="text-[10px]">고정비</span>
+        </a>
+        <a href="#settings" class="bottom-nav-item" title="설정" onclick="openModal('modal-settings')">
+            <span class="text-xl">⚙️</span>
+            <span class="text-[10px]">설정</span>
+        </a>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FLOATING ACTION BUTTON
+         ════════════════════════════════════════════════════════════ -->
+    <button class="fab" id="btn-fab-add" onclick="openModal('modal-add-transaction')" title="거래 추가">
+        ➕
+    </button>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODALS
+         ════════════════════════════════════════════════════════════ -->
+
+    <!-- Modal: Add Transaction -->
+    <div id="modal-add-transaction" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('modal-add-transaction')">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h2>거래 추가</h2>
+                <button class="modal-close-btn" data-close-modal="modal-add-transaction">✕</button>
+            </div>
+            <div class="modal-content">
+                <p class="text-slate-9 dark:text-slateD-9 text-sm">가계부 페이지로 이동해서 거래를 추가하세요.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary flex-1" data-close-modal="modal-add-transaction">취소</button>
+                <button class="btn-primary flex-1" onclick="window.location.href='index.html'">가계부로 이동</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Subscription -->
+    <div id="modal-add-subscription" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('modal-add-subscription')">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h2>구독 추가</h2>
+                <button class="modal-close-btn" data-close-modal="modal-add-subscription">✕</button>
+            </div>
+            <div class="modal-content">
+                <p class="text-slate-9 dark:text-slateD-9 text-sm">고정비 페이지로 이동해서 구독을 추가하세요.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary flex-1" data-close-modal="modal-add-subscription">취소</button>
+                <button class="btn-primary flex-1" onclick="window.location.href='fixed.html'">고정비로 이동</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Settings -->
+    <div id="modal-settings" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('modal-settings')">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h2>설정</h2>
+                <button class="modal-close-btn" data-close-modal="modal-settings">✕</button>
+            </div>
+            <div class="modal-content space-y-4">
+                <div class="form-group">
+                    <label class="form-label">테마</label>
+                    <div class="flex gap-2">
+                        <button id="theme-light-btn" class="btn-secondary flex-1">☀️ Light</button>
+                        <button id="theme-dark-btn" class="btn-secondary flex-1">🌙 Dark</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">통화</label>
+                    <select id="currency-select" class="form-input">
+                        <option value="KRW">한국원 (KRW)</option>
+                        <option value="USD">미국달러 (USD)</option>
+                        <option value="JPY">일본엔 (JPY)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary flex-1" data-close-modal="modal-settings">완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCRIPTS
+         ════════════════════════════════════════════════════════════ -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
+    <script src="assets/scripts/data-manager.js"></script>
+    <script src="assets/scripts/charts-dashboard.js"></script>
+    <script src="assets/scripts/dashboard.js"></script>
+
+    <script>
+        /**
+         * Initialize Dashboard on Page Load
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Dashboard initialized');
+
+            // Initialize dashboard
+            initDashboard();
+
+            // Set up event listeners
+            setupMonthNavigation();
+            setupThemeButtons();
+            setupCurrencySelector();
+        });
+    </script>
+
+</body>
+
+</html>

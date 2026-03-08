@@ -606,3 +606,104 @@ async def upload_excel(file: UploadFile = File(...)):
         "columns_detected": list(rows[0].keys()) if rows else [],
         "preview": preview
     }
+
+
+# ═══════════════════════════════════════════════════════════
+# DASHBOARD ENDPOINTS
+# ═══════════════════════════════════════════════════════════
+
+class DashboardSummaryRequest(BaseModel):
+    month: str  # YYYY-MM format
+    currencies: Optional[List[str]] = ["KRW"]
+
+
+@router.post("/dashboard-summary")
+async def get_dashboard_summary(request: DashboardSummaryRequest):
+    """
+    Get aggregated dashboard summary for a given month.
+    Includes: total assets, income, expenses, categories, daily breakdown
+    """
+    try:
+        month = request.month  # YYYY-MM
+        transactions = _load_json(TRANSACTIONS_FILE, [])
+
+        # Filter transactions for the given month
+        monthly_transactions = [
+            txn for txn in transactions
+            if txn.get("date", "").startswith(month)
+        ]
+
+        # Calculate summary metrics
+        total_income = 0
+        total_expense = 0
+        category_breakdown = {}
+        daily_breakdown = {}
+
+        for txn in monthly_transactions:
+            amount = txn.get("amount", 0)
+            txn_type = txn.get("type", "")
+            date = txn.get("date", "")
+            category = txn.get("category_medium", "기타")
+
+            if txn_type == "income":
+                total_income += amount
+            elif txn_type == "expense":
+                total_expense += amount
+
+                # Track by category
+                if category not in category_breakdown:
+                    category_breakdown[category] = 0
+                category_breakdown[category] += amount
+
+                # Track by day
+                if date not in daily_breakdown:
+                    daily_breakdown[date] = {"income": 0, "expense": 0}
+                daily_breakdown[date]["expense"] += amount
+
+            if txn_type == "income" and date in daily_breakdown:
+                daily_breakdown[date]["income"] += amount
+
+        # Calculate total assets (sum of all transactions grouped by asset)
+        total_assets = 0
+        for txn in transactions:
+            if txn.get("type") == "income":
+                total_assets += txn.get("amount", 0)
+            elif txn.get("type") == "expense":
+                total_assets -= txn.get("amount", 0)
+
+        # Format category breakdown
+        category_list = [
+            {"category": cat, "amount": amount, "percentage": round((amount / total_expense * 100), 1) if total_expense > 0 else 0}
+            for cat, amount in sorted(category_breakdown.items(), key=lambda x: x[1], reverse=True)
+        ]
+
+        # Format daily breakdown
+        daily_list = [
+            {"date": date, "income": data["income"], "expense": data["expense"]}
+            for date, data in sorted(daily_breakdown.items())
+        ]
+
+        return {
+            "status": "success",
+            "data": {
+                "month": month,
+                "summary": {
+                    "total_assets": total_assets,
+                    "monthly_income": total_income,
+                    "monthly_expense": total_expense,
+                    "monthly_balance": total_income - total_expense,
+                    "fixed_costs_total": 0,  # Will be populated from subscriptions
+                    "currency": "KRW"
+                },
+                "daily_breakdown": daily_list,
+                "category_breakdown": category_list,
+                "subscriptions_summary": {
+                    "count": 0,
+                    "active": 0,
+                    "total_monthly_cost": 0,
+                    "by_category": {}
+                }
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error calculating dashboard summary: {str(e)}")
