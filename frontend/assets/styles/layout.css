@@ -1,0 +1,981 @@
+/* ============================================================================
+   LAYOUT.CSS - Layout Patterns, Grid, Flexbox, and Responsive Design
+   ============================================================================
+   Defines container patterns, navigation layouts, grid systems, and
+   responsive breakpoint behaviors.
+   ============================================================================ */
+
+/* ============================================================================
+   1. CONTAINER PATTERNS
+   ============================================================================ */
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.container.sm {
+  max-width: 640px;
+}
+
+.container.md {
+  max-width: 768px;
+}
+
+.container.lg {
+  max-width: 1024px;
+}
+
+.container.xl {
+  max-width: 1280px;
+}
+
+.container.2xl {
+  max-width: 1536px;
+}
+
+.container-compact {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .container-compact {
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-compact {
+    padding: var(--space-12) var(--space-8);
+  }
+}
+
+/* ============================================================================
+   2. HEADER COMPONENT
+   ============================================================================ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: var(--slate-1);
+  border-bottom: 1px solid var(--slate-4);
+  backdrop-filter: blur(12px);
+  background-color: rgba(252, 252, 253, 0.8);
+  height: 3.5rem;
+}
+
+:root.dark .header {
+  background-color: rgba(26, 27, 31, 0.8);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .header-content {
+    padding: 0 var(--space-6);
+  }
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-12);
+  text-decoration: none;
+}
+
+.header-logo img {
+  width: 2rem;
+  height: 2rem;
+}
+
+.header-nav {
+  display: none;
+  gap: var(--space-6);
+  flex: 1;
+  margin-left: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .header-nav {
+    display: flex;
+  }
+}
+
+.header-nav a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--slate-9);
+  transition: color var(--duration-fast) var(--timing);
+}
+
+.header-nav a:hover {
+  color: var(--slate-12);
+}
+
+.header-nav a.active {
+  color: var(--primary-11);
+  border-bottom: 2px solid var(--primary-11);
+  padding-bottom: var(--space-2);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--slate-9);
+  transition: all var(--duration-fast) var(--timing);
+}
+
+.header-action-btn:hover {
+  background-color: var(--slate-3);
+  color: var(--slate-12);
+}
+
+/* ============================================================================
+   3. NAVIGATION PATTERNS
+   ============================================================================ */
+
+/* Sidebar Navigation */
+.nav-sidebar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: var(--slate-2);
+  border-right: 1px solid var(--slate-4);
+  padding: var(--space-6) 0;
+  z-index: 20;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .nav-sidebar {
+    display: block;
+  }
+}
+
+.nav-sidebar-item {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  color: var(--slate-9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--timing);
+  border-left: 3px solid transparent;
+}
+
+.nav-sidebar-item:hover {
+  background-color: var(--slate-3);
+  color: var(--slate-12);
+}
+
+.nav-sidebar-item.active {
+  background-color: var(--primary-5);
+  color: var(--primary-11);
+  border-left-color: var(--primary-11);
+}
+
+/* Bottom Mobile Navigation */
+.nav-bottom-mobile {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: auto;
+  border-top: 1px solid var(--slate-4);
+  background-color: var(--slate-1);
+  z-index: 40;
+}
+
+@media (min-width: 768px) {
+  .nav-bottom-mobile {
+    display: none;
+  }
+}
+
+.nav-bottom-mobile-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-2);
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--slate-9);
+  cursor: pointer;
+  border-top: 2px solid transparent;
+  transition: all var(--duration-fast) var(--timing);
+}
+
+.nav-bottom-mobile-item:hover {
+  color: var(--slate-12);
+}
+
+.nav-bottom-mobile-item.active {
+  color: var(--primary-11);
+  border-top-color: var(--primary-11);
+}
+
+.nav-bottom-mobile-item svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ============================================================================
+   4. GRID SYSTEM
+   ============================================================================ */
+
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Responsive Grid Columns */
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid-cols-auto {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Responsive Grid - Mobile First */
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sm\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sm\:gap-4 {
+    gap: var(--space-4);
+  }
+
+  .sm\:gap-6 {
+    gap: var(--space-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .md\:gap-4 {
+    gap: var(--space-4);
+  }
+
+  .md\:gap-6 {
+    gap: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lg\:gap-6 {
+    gap: var(--space-6);
+  }
+}
+
+/* Grid Column Spanning */
+.col-span-1 {
+  grid-column: span 1;
+}
+
+.col-span-2 {
+  grid-column: span 2;
+}
+
+.col-span-3 {
+  grid-column: span 3;
+}
+
+.col-span-4 {
+  grid-column: span 4;
+}
+
+@media (min-width: 768px) {
+  .md\:col-span-1 {
+    grid-column: span 1;
+  }
+
+  .md\:col-span-2 {
+    grid-column: span 2;
+  }
+
+  .md\:col-span-3 {
+    grid-column: span 3;
+  }
+}
+
+/* Grid Row Spanning */
+.row-span-1 {
+  grid-row: span 1;
+}
+
+.row-span-2 {
+  grid-row: span 2;
+}
+
+.row-span-3 {
+  grid-row: span 3;
+}
+
+/* ============================================================================
+   5. FLEXBOX UTILITIES
+   ============================================================================ */
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-col-reverse {
+  flex-direction: column-reverse;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-wrap-reverse {
+  flex-wrap: wrap-reverse;
+}
+
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-around {
+  justify-content: space-around;
+}
+
+.justify-evenly {
+  justify-content: space-evenly;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.content-start {
+  align-content: flex-start;
+}
+
+.content-end {
+  align-content: flex-end;
+}
+
+.content-center {
+  align-content: center;
+}
+
+.content-between {
+  align-content: space-between;
+}
+
+.content-around {
+  align-content: space-around;
+}
+
+.self-start {
+  align-self: flex-start;
+}
+
+.self-end {
+  align-self: flex-end;
+}
+
+.self-center {
+  align-self: center;
+}
+
+.self-stretch {
+  align-self: stretch;
+}
+
+/* Responsive Flexbox */
+@media (min-width: 640px) {
+  .sm\:flex-col {
+    flex-direction: column;
+  }
+
+  .sm\:flex-row {
+    flex-direction: row;
+  }
+
+  .sm\:justify-between {
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:flex-col {
+    flex-direction: column;
+  }
+
+  .md\:flex-row {
+    flex-direction: row;
+  }
+
+  .md\:justify-between {
+    justify-content: space-between;
+  }
+
+  .md\:items-center {
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:flex-col {
+    flex-direction: column;
+  }
+
+  .lg\:flex-row {
+    flex-direction: row;
+  }
+}
+
+/* ============================================================================
+   6. SPACING UTILITIES - GAPS, MARGINS, PADDING
+   ============================================================================ */
+
+/* Gap (flexbox/grid) */
+.gap-0 {
+  gap: 0;
+}
+
+.gap-1 {
+  gap: var(--space-1);
+}
+
+.gap-2 {
+  gap: var(--space-2);
+}
+
+.gap-3 {
+  gap: var(--space-3);
+}
+
+.gap-4 {
+  gap: var(--space-4);
+}
+
+.gap-6 {
+  gap: var(--space-6);
+}
+
+.gap-8 {
+  gap: var(--space-8);
+}
+
+/* Row Gap */
+.gap-y-2 {
+  row-gap: var(--space-2);
+}
+
+.gap-y-4 {
+  row-gap: var(--space-4);
+}
+
+.gap-y-6 {
+  row-gap: var(--space-6);
+}
+
+/* Column Gap */
+.gap-x-2 {
+  column-gap: var(--space-2);
+}
+
+.gap-x-4 {
+  column-gap: var(--space-4);
+}
+
+.gap-x-6 {
+  column-gap: var(--space-6);
+}
+
+/* Margin Auto (centering) */
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-auto {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.mr-auto {
+  margin-right: auto;
+}
+
+.mt-auto {
+  margin-top: auto;
+}
+
+.mb-auto {
+  margin-bottom: auto;
+}
+
+/* ============================================================================
+   7. RESPONSIVE MAIN LAYOUT
+   ============================================================================ */
+
+/* Main Content Area with Sidebar */
+.layout-with-sidebar {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 3.5rem;
+}
+
+.layout-main {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .layout-with-sidebar {
+    margin-left: 250px;
+  }
+}
+
+/* Main Content with Bottom Nav */
+.layout-with-bottom-nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-top: 3.5rem;
+}
+
+.layout-main {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .layout-with-bottom-nav {
+    padding-top: 3.5rem;
+  }
+
+  .layout-main {
+    padding-bottom: 0;
+    padding: var(--space-6);
+  }
+}
+
+/* ============================================================================
+   8. FLOATING ACTION BUTTON (FAB)
+   ============================================================================ */
+
+.fab {
+  position: fixed;
+  bottom: 6rem;
+  right: 1.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: var(--primary-11);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-2xl);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all var(--duration-fast) var(--timing);
+}
+
+.fab:hover {
+  background-color: var(--primary-10);
+  transform: scale(1.08);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+@media (min-width: 768px) {
+  .fab {
+    bottom: 2.5rem;
+    right: 2.5rem;
+  }
+}
+
+/* ============================================================================
+   9. SAFE AREA SUPPORT (iPhone notch, bottom indicator)
+   ============================================================================ */
+
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+
+  .nav-bottom-mobile {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .layout-main {
+    padding-bottom: max(6rem, calc(var(--space-6) + env(safe-area-inset-bottom)));
+  }
+
+  @media (min-width: 768px) {
+    .layout-main {
+      padding-bottom: var(--space-6);
+    }
+  }
+}
+
+/* ============================================================================
+   10. SECTION AND ARTICLE SPACING
+   ============================================================================ */
+
+section {
+  margin-bottom: var(--space-8);
+}
+
+section:last-child {
+  margin-bottom: 0;
+}
+
+article {
+  margin-bottom: var(--space-8);
+}
+
+/* ============================================================================
+   11. VISIBILITY UTILITIES
+   ============================================================================ */
+
+.visible {
+  visibility: visible;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.block {
+  display: block;
+}
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.inline-grid {
+  display: inline-grid;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Responsive Visibility */
+@media (max-width: 639px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .hidden-sm {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .hidden-md {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hidden-lg {
+    display: none !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .show-mobile {
+    display: block;
+  }
+}
+
+@media (min-width: 640px) {
+  .show-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .show-tablet {
+    display: block;
+  }
+}
+
+@media (max-width: 767px) {
+  .show-tablet {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .show-desktop {
+    display: block;
+  }
+}
+
+@media (max-width: 1023px) {
+  .show-desktop {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   12. OVERFLOW AND TRUNCATION
+   ============================================================================ */
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   13. Z-INDEX SCALE
+   ============================================================================ */
+
+.z-0 {
+  z-index: 0;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
+.z-40 {
+  z-index: 40;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+.z-9999 {
+  z-index: 9999;
+}
+
+/* ============================================================================
+   14. ASPECT RATIO (for images, videos)
+   ============================================================================ */
+
+.aspect-square {
+  aspect-ratio: 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-auto {
+  aspect-ratio: auto;
+}
+
+/* ============================================================================
+   15. POSITION UTILITIES
+   ============================================================================ */
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.sticky {
+  position: sticky;
+}
+
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.top-0 {
+  top: 0;
+}
+
+.right-0 {
+  right: 0;
+}
+
+.bottom-0 {
+  bottom: 0;
+}
+
+.left-0 {
+  left: 0;
+}
