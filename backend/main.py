@@ -50,9 +50,8 @@ app.add_middleware(
 # Register ledger API routes
 app.include_router(ledger_router)
 
-# Serve frontend static files
+# Serve frontend static files at root (must be after all API routes)
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
 class SubscriptionModel(BaseModel):
@@ -461,3 +460,7 @@ async def export_subscriptions_csv():
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"CSV export failed: {str(e)}")
+
+
+# ═══ FRONTEND STATIC FILES (must be last - catches all unmatched routes) ═══
+app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
