@@ -23,6 +23,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 SUBSCRIPTIONS_FILE = DATA_DIR / "subscriptions.json"
+SETTINGS_FILE = DATA_DIR / "settings.json"
 
 # 초기 데이터 (파일 없을 때만 생성)
 DEFAULT_DATA = [
@@ -69,6 +70,16 @@ class SubscriptionModel(BaseModel):
     icon: Optional[str] = None
     billing_cycle: Optional[str] = None  # 매일/매주/매월/매년/기타 (일반 고정비용)
     billing_cycle_custom: Optional[str] = None  # 기타 선택 시 수기입력
+
+
+class UserSettingsModel(BaseModel):
+    id: str = "default"
+    nickname: str = "사용자"
+    default_currency: str = "KRW"
+    timezone: str = "Asia/Seoul"
+    theme: str = "dark"
+    notification_days_before: int = 3
+    updated_at: Optional[str] = None
 
 
 def load_subscriptions() -> List[Dict[str, Any]]:
@@ -377,6 +388,32 @@ async def stop_bot():
             print("[텔레그램 봇 종료]")
         except Exception as e:
             print(f"[텔레그램 봇 종료 실패] {e}")
+
+
+# ═══ SETTINGS ═══
+@app.get("/api/settings")
+async def get_settings():
+    """Get user settings"""
+    try:
+        if SETTINGS_FILE.exists():
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        # Return default settings if file doesn't exist
+        return UserSettingsModel().dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/api/settings")
+async def update_settings(settings: UserSettingsModel):
+    """Update user settings"""
+    try:
+        settings.updated_at = datetime.now().isoformat()
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(settings.dict(), f, ensure_ascii=False, indent=2)
+        return {"status": "ok", "settings": settings.dict()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ═══ CSV EXPORT ═══

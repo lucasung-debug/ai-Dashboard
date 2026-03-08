@@ -890,3 +890,87 @@ async def delete_savings_goal(goal_id: str):
     goals = [g for g in goals if g.get("id") != goal_id]
     _save_json(SAVINGS_GOALS_FILE, goals)
     return {"status": "deleted"}
+
+
+# ═══ BACKUP & RESTORE ═══
+@router.get("/export/backup")
+async def export_backup():
+    """
+    Export all data as JSON bundle for backup.
+    Includes: transactions, budgets, category_budgets, savings_goals,
+              assets, categories, categorization_rules, exchange_rates
+    """
+    try:
+        backup_data = {
+            "version": "1.0",
+            "exported_at": datetime.now().isoformat(),
+            "data": {
+                "transactions": _load_json(TRANSACTIONS_FILE, []),
+                "budgets": _load_json(BUDGETS_FILE, []),
+                "category_budgets": _load_json(CATEGORY_BUDGETS_FILE, []),
+                "savings_goals": _load_json(SAVINGS_GOALS_FILE, []),
+                "assets": _load_json(ASSETS_FILE, []),
+                "categories": _load_json(CATEGORIES_FILE, {}),
+                "categorization_rules": _load_json(CATEGORIZATION_RULES_FILE, []),
+                "exchange_rates": _load_json(EXCHANGE_RATES_FILE, {})
+            }
+        }
+
+        backup_json = json.dumps(backup_data, ensure_ascii=False, indent=2)
+
+        return StreamingResponse(
+            iter([backup_json]),
+            media_type="application/json; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="가계부_백업_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backup export failed: {str(e)}")
+
+
+@router.post("/import/restore")
+async def restore_backup(file: UploadFile = File(...)):
+    """
+    Restore data from a backup JSON file.
+    Validates structure and saves each data type to its respective file.
+    """
+    try:
+        content = await file.read()
+        backup_data = json.loads(content.decode('utf-8'))
+
+        # Validate backup version
+        if backup_data.get("version") != "1.0":
+            raise ValueError("Unsupported backup version")
+
+        data = backup_data.get("data", {})
+
+        # Save each data type
+        if "transactions" in data:
+            _save_json(TRANSACTIONS_FILE, data["transactions"])
+        if "budgets" in data:
+            _save_json(BUDGETS_FILE, data["budgets"])
+        if "category_budgets" in data:
+            _save_json(CATEGORY_BUDGETS_FILE, data["category_budgets"])
+        if "savings_goals" in data:
+            _save_json(SAVINGS_GOALS_FILE, data["savings_goals"])
+        if "assets" in data:
+            _save_json(ASSETS_FILE, data["assets"])
+        if "categories" in data:
+            _save_json(CATEGORIES_FILE, data["categories"])
+        if "categorization_rules" in data:
+            _save_json(CATEGORIZATION_RULES_FILE, data["categorization_rules"])
+        if "exchange_rates" in data:
+            _save_json(EXCHANGE_RATES_FILE, data["exchange_rates"])
+
+        # Count total items restored
+        count = sum(
+            len(v) if isinstance(v, list) else (len(v) if isinstance(v, dict) else 1)
+            for v in data.values()
+        )
+
+        return {"status": "ok", "count": count}
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Restore failed: {str(e)}")

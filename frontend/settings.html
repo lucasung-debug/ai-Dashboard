@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설정 - ai-Dashboard</title>
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+</head>
+
+<body class="transition-colors pb-20 md:pb-0">
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-content">
+            <div class="flex items-center gap-3">
+                <a href="dashboard.html" class="text-slate-9 hover:text-slate-12 dark:text-slateD-9 dark:hover:text-slateD-12" title="돌아가기">←</a>
+                <h1 class="header-logo">
+                    ⚙️ 설정
+                </h1>
+            </div>
+
+            <!-- Top Navigation Links -->
+            <nav class="header-nav">
+                <a href="dashboard.html">통합대시보드</a>
+                <a href="index.html">가계부</a>
+                <a href="reports.html">보고서</a>
+                <a href="fixed.html">고정비</a>
+            </nav>
+
+            <!-- Action Buttons -->
+            <div class="header-actions">
+                <button id="theme-toggle-btn" title="테마 전환" class="header-action-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="container-compact">
+
+        <!-- Page Title -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-2">설정</h2>
+            <p class="text-slate-9 dark:text-slateD-9 text-sm">앱 환경설정 및 데이터 관리</p>
+        </section>
+
+        <!-- ═══ PROFILE SECTION ═══ -->
+        <section class="card">
+            <h3 class="text-sm font-bold mb-4">👤 프로필</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-9 dark:text-slateD-9 mb-2">닉네임</label>
+                    <input type="text" id="nickname-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" placeholder="사용자명" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-9 dark:text-slateD-9 mb-2">기본 통화</label>
+                        <select id="currency-select" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                            <option value="KRW">₩ 한국원</option>
+                            <option value="USD">$ 미국달러</option>
+                            <option value="JPY">¥ 일본엔</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-9 dark:text-slateD-9 mb-2">타임존</label>
+                        <select id="timezone-select" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                            <option value="Asia/Seoul">서울</option>
+                            <option value="Asia/Tokyo">도쿄</option>
+                            <option value="UTC">UTC</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="saveUserSettings()" class="w-full py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">저장</button>
+            </div>
+        </section>
+
+        <!-- ═══ THEME SECTION ═══ -->
+        <section class="card">
+            <h3 class="text-sm font-bold mb-4">🎨 테마</h3>
+            <div class="flex gap-3">
+                <button onclick="setTheme('light')" class="flex-1 px-4 py-2.5 rounded-lg border-2 border-slate-4 dark:border-slateD-4 hover:border-slate-6 dark:hover:border-slateD-6 text-sm font-medium transition-colors" id="theme-light-btn">☀️ 라이트</button>
+                <button onclick="setTheme('dark')" class="flex-1 px-4 py-2.5 rounded-lg border-2 border-slate-4 dark:border-slateD-4 hover:border-slate-6 dark:hover:border-slateD-6 text-sm font-medium transition-colors" id="theme-dark-btn">🌙 다크</button>
+            </div>
+        </section>
+
+        <!-- ═══ NOTIFICATION SETTINGS ═══ -->
+        <section class="card">
+            <h3 class="text-sm font-bold mb-4">🔔 알림 설정</h3>
+            <div>
+                <label class="block text-xs font-semibold text-slate-9 dark:text-slateD-9 mb-2">고정비 미리알림 (일)</label>
+                <input type="number" id="notification-days-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" min="1" max="30" placeholder="3" />
+                <p class="text-xs text-slate-9 dark:text-slateD-9 mt-2">다음 결제일로부터 X일 전에 알림받기</p>
+            </div>
+        </section>
+
+        <!-- ═══ DATA MANAGEMENT ═══ -->
+        <section class="card">
+            <h3 class="text-sm font-bold mb-4">💾 데이터 관리</h3>
+            <div class="space-y-3">
+                <button onclick="exportBackup()" class="w-full py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-12 dark:text-slateD-12 rounded-lg text-sm font-medium transition-colors">📥 전체 데이터 백업 다운로드</button>
+                <button onclick="openRestoreModal()" class="w-full py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-12 dark:text-slateD-12 rounded-lg text-sm font-medium transition-colors">📤 백업 파일 복원</button>
+                <button onclick="resetAllData()" class="w-full py-2.5 bg-ruby-9/20 dark:bg-ruby-9/30 text-ruby-11 dark:text-ruby-11 hover:bg-ruby-9/30 dark:hover:bg-ruby-9/40 rounded-lg text-sm font-medium transition-colors">🗑️ 모든 데이터 초기화</button>
+            </div>
+            <p class="text-xs text-slate-9 dark:text-slateD-9 mt-4 pt-4 border-t border-slate-4 dark:border-slateD-4">💡 정기적으로 백업하여 데이터를 안전하게 보관하세요.</p>
+        </section>
+
+        <!-- ═══ APP INFO ═══ -->
+        <section class="card text-center">
+            <p class="text-xs text-slate-9 dark:text-slateD-9">
+                <strong>ai-Dashboard</strong> v1.0<br>
+                <span class="text-[10px]">Phase 3 - 2026년 3월</span>
+            </p>
+        </section>
+
+    </main>
+
+    <!-- ═══ RESTORE MODAL ═══ -->
+    <div id="restore-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeRestoreModal()">
+        <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+            <div class="p-5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-base font-bold">백업 복원</h3>
+                    <button onclick="closeRestoreModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                </div>
+                <p class="text-xs text-slate-9 dark:text-slateD-9">이전에 저장한 백업 파일을 선택하세요. 현재 데이터가 덮어씌워집니다.</p>
+                <div id="drop-zone" class="border-2 border-dashed border-slate-4 dark:border-slateD-4 rounded-xl p-6 text-center cursor-pointer hover:border-primary-9 dark:hover:border-primary-9 transition bg-slate-1 dark:bg-slateD-1">
+                    <p class="text-sm text-slate-9 dark:text-slateD-9">📁 파일을 여기에 드롭하거나 클릭</p>
+                    <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="restoreFromFile()" />
+                </div>
+                <button type="button" class="w-full py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 rounded-lg text-sm font-medium transition-colors" onclick="closeRestoreModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ BOTTOM NAVIGATION (Mobile) ═══ -->
+    <nav id="bottom-nav" class="bottom-nav md:hidden">
+        <a href="dashboard.html" class="bottom-nav-item" title="대시보드">📊</a>
+        <a href="index.html" class="bottom-nav-item" title="가계부">💰</a>
+        <a href="reports.html" class="bottom-nav-item" title="보고서">📈</a>
+        <a href="settings.html" class="bottom-nav-item active" title="설정">⚙️</a>
+    </nav>
+
+    <!-- ═══ SCRIPTS ═══ -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
+    <script src="assets/scripts/settings.js"></script>
+
+</body>
+
+</html>
