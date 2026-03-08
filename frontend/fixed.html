@@ -1,67 +1,21 @@
 <!DOCTYPE html>
-<html lang="ko" class="dark">
+<html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>고정비 관리 통합 대시보드</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+
+    <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: { bg: '#0f172a', card: '#1e293b', border: '#334155', text: '#f8fafc', muted: '#94a3b8' },
-                        primary: { 500: '#3b82f6', 600: '#2563eb' }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-in-up {
-            animation: fadeInUp 0.3s ease-out forwards;
-        }
-    </style>
 </head>
 
-<body
-    class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-dark-text min-h-screen p-6 antialiased selection:bg-primary-500 selection:text-white transition-colors duration-200">
+<body class="transition-colors">
 
     <div class="max-w-6xl mx-auto space-y-8">
 
@@ -1161,11 +1115,12 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // Legacy theme handling (now integrated with theme.js)
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
+                setTheme('dark');
             } else {
-                document.documentElement.classList.remove('dark');
+                setTheme('light');
             }
 
             renderCategoryOptions();
@@ -1179,6 +1134,11 @@
             fetchSubscriptions();
         });
     </script>
+
+    <!-- New UI/UX System Scripts -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
 </body>
 
 </html>

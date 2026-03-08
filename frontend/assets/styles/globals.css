@@ -1,0 +1,1147 @@
+/* ============================================================================
+   GLOBALS.CSS - Global Styles, Variables, and Foundation
+   ============================================================================
+   Defines CSS custom properties, typography, reset styles, and base elements.
+   Supports both light and dark modes using CSS variables.
+   ============================================================================ */
+
+/* ============================================================================
+   1. CSS CUSTOM PROPERTIES (COLOR PALETTE - RADIX SCALE)
+   ============================================================================ */
+
+:root {
+  /* Light Mode: Slate Grayscale */
+  --slate-1: #fcfcfd;
+  --slate-2: #f8f9fa;
+  --slate-3: #f0f1f4;
+  --slate-4: #e8eaed;
+  --slate-5: #dfe1e6;
+  --slate-6: #d5d7df;
+  --slate-7: #c9cbd4;
+  --slate-8: #b1b5c0;
+  --slate-9: #626a75;
+  --slate-10: #565d6d;
+  --slate-11: #3f4555;
+  --slate-12: #1a1d23;
+
+  /* Dark Mode Colors (defined in :root.dark) */
+  /* Semantic Colors - Light Mode */
+  --primary-5: #d0e0ff;
+  --primary-6: #b7d4ff;
+  --primary-7: #9bc9ff;
+  --primary-8: #7eb6ff;
+  --primary-9: #5b8eff;
+  --primary-10: #4a7cff;
+  --primary-11: #3e63dd;
+  --primary-12: #1f2d7d;
+
+  --success-5: #d6f6f0;
+  --success-6: #bff1ea;
+  --success-7: #a2e9e0;
+  --success-8: #7ce2d3;
+  --success-9: #58d5ba;
+  --success-10: #4ecfb1;
+  --success-11: #86ead4;
+  --success-12: #164b35;
+
+  --danger-5: #ffe5eb;
+  --danger-6: #ffd1dd;
+  --danger-7: #ffb8cd;
+  --danger-8: #ff9db5;
+  --danger-9: #e54666;
+  --danger-10: #d6336c;
+  --danger-11: #ff9592;
+  --danger-12: #7d1d1a;
+
+  --warning-5: #fff8dc;
+  --warning-6: #fff4c2;
+  --warning-7: #ffe8a8;
+  --warning-8: #ffd88e;
+  --warning-9: #ffc53d;
+  --warning-10: #ffb800;
+  --warning-11: #ffba18;
+  --warning-12: #74490f;
+
+  /* Dark Mode Color Overrides (SlateD) */
+  --dark-bg: #0f172a;
+  --dark-card: #1e293b;
+  --dark-border: #334155;
+  --dark-muted: #64748b;
+
+  /* Typography */
+  --font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+
+  /* Spacing Scale (4px base) */
+  --space-0: 0;
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Border Radius */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.25rem; /* 20px */
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --timing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Responsive Breakpoints (for reference in media queries) */
+  /* sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px */
+}
+
+/* Dark Mode Color Overrides */
+:root.dark {
+  /* Dark Mode: SlateD Grayscale (reversed) */
+  --slate-1: #111113;
+  --slate-2: #1a1b1f;
+  --slate-3: #25272d;
+  --slate-4: #2e3038;
+  --slate-5: #383e48;
+  --slate-6: #454d59;
+  --slate-7: #5a6375;
+  --slate-8: #7a8594;
+  --slate-9: #9da3ad;
+  --slate-10: #b0b8c2;
+  --slate-11: #cdd5df;
+  --slate-12: #edeef0;
+
+  /* Dark Mode Semantic Colors */
+  --primary-5: #1a2c5c;
+  --primary-6: #1a3a6b;
+  --primary-7: #1a477a;
+  --primary-8: #1f5396;
+  --primary-9: #5472e4;
+  --primary-10: #6785ff;
+  --primary-11: #8ab4ff;
+  --primary-12: #e0edff;
+
+  --success-5: #0e4434;
+  --success-6: #0d5142;
+  --success-7: #0c6e4f;
+  --success-8: #0d8659;
+  --success-9: #1ea372;
+  --success-10: #2db88d;
+  --success-11: #5ee9c3;
+  --success-12: #c6fae8;
+
+  --danger-5: #5a1a1f;
+  --danger-6: #6f1f27;
+  --danger-7: #85232d;
+  --danger-8: #a02134;
+  --danger-9: #c73a54;
+  --danger-10: #e54666;
+  --danger-11: #ff9592;
+  --danger-12: #ffd4d0;
+
+  --warning-5: #4a2e0a;
+  --warning-6: #613a08;
+  --warning-7: #794b05;
+  --warning-8: #955d04;
+  --warning-9: #c07100;
+  --warning-10: #f18500;
+  --warning-11: #ffba18;
+  --warning-12: #fffaeb;
+}
+
+/* ============================================================================
+   2. @FONT-FACE DECLARATIONS
+   ============================================================================ */
+
+@font-face {
+  font-family: 'Pretendard Variable';
+  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================================
+   3. GLOBAL RESET AND NORMALIZE
+   ============================================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--slate-12);
+  background-color: var(--slate-1);
+  transition: background-color var(--duration-normal) var(--timing),
+    color var(--duration-normal) var(--timing);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================================
+   4. BASE TYPOGRAPHY
+   ============================================================================ */
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--space-4);
+}
+
+h1 {
+  font-size: 1.875rem; /* 30px */
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.5rem; /* 24px */
+}
+
+h3 {
+  font-size: 1.25rem; /* 20px */
+}
+
+h4 {
+  font-size: 1.125rem; /* 18px */
+}
+
+h5 {
+  font-size: 1rem; /* 16px */
+}
+
+h6 {
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Paragraphs and Text */
+p {
+  margin-bottom: var(--space-4);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+small {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+/* Links */
+a {
+  color: var(--primary-11);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--timing);
+}
+
+a:hover {
+  color: var(--primary-10);
+  text-decoration: underline;
+}
+
+a:active {
+  color: var(--primary-12);
+}
+
+/* ============================================================================
+   5. FORM ELEMENTS (BASE STYLES)
+   ============================================================================ */
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+}
+
+/* Input Fields */
+input[type='text'],
+input[type='email'],
+input[type='number'],
+input[type='password'],
+input[type='search'],
+input[type='url'],
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'],
+textarea,
+select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--slate-4);
+  border-radius: var(--radius-md);
+  background-color: var(--slate-1);
+  color: var(--slate-12);
+  transition: border-color var(--duration-fast) var(--timing),
+    background-color var(--duration-fast) var(--timing);
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='number']:focus,
+input[type='password']:focus,
+input[type='search']:focus,
+input[type='url']:focus,
+input[type='date']:focus,
+input[type='time']:focus,
+input[type='datetime-local']:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-11);
+  box-shadow: 0 0 0 3px rgba(62, 99, 221, 0.1);
+}
+
+input[type='text']:disabled,
+input[type='email']:disabled,
+input[type='number']:disabled,
+input[type='password']:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+select {
+  cursor: pointer;
+}
+
+/* ============================================================================
+   6. LISTS
+   ============================================================================ */
+
+ul,
+ol {
+  margin-bottom: var(--space-4);
+  margin-left: var(--space-6);
+}
+
+li {
+  margin-bottom: var(--space-2);
+}
+
+/* ============================================================================
+   7. TABLES
+   ============================================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-weight: 600;
+  text-align: left;
+  padding: var(--space-3);
+}
+
+td {
+  padding: var(--space-3);
+}
+
+/* ============================================================================
+   8. CODE
+   ============================================================================ */
+
+code,
+pre {
+  font-family: 'Courier New', monospace;
+  background-color: var(--slate-3);
+  border-radius: var(--radius-md);
+}
+
+code {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875em;
+}
+
+pre {
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* ============================================================================
+   9. SCROLLBAR STYLING (WebKit browsers)
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--slate-6);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-7);
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+  background: var(--slate-7);
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-6);
+}
+
+/* Hide scrollbar for specific elements (used with overflow-x-auto) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================================
+   10. UTILITY CLASSES
+   ============================================================================ */
+
+/* Display */
+.hidden {
+  display: none !important;
+}
+
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.flex {
+  display: flex;
+}
+
+.grid {
+  display: grid;
+}
+
+.inline {
+  display: inline;
+}
+
+/* Flexbox */
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-around {
+  justify-content: space-around;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-auto {
+  flex: auto;
+}
+
+.gap-1 {
+  gap: var(--space-1);
+}
+
+.gap-2 {
+  gap: var(--space-2);
+}
+
+.gap-3 {
+  gap: var(--space-3);
+}
+
+.gap-4 {
+  gap: var(--space-4);
+}
+
+.gap-6 {
+  gap: var(--space-6);
+}
+
+/* Padding */
+.p-1 {
+  padding: var(--space-1);
+}
+
+.p-2 {
+  padding: var(--space-2);
+}
+
+.p-3 {
+  padding: var(--space-3);
+}
+
+.p-4 {
+  padding: var(--space-4);
+}
+
+.p-5 {
+  padding: var(--space-5);
+}
+
+.p-6 {
+  padding: var(--space-6);
+}
+
+.px-2 {
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+
+.px-3 {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.px-4 {
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.py-2 {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.py-3 {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.py-4 {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+
+.pb-4 {
+  padding-bottom: var(--space-4);
+}
+
+.pb-6 {
+  padding-bottom: var(--space-6);
+}
+
+.pb-24 {
+  padding-bottom: 6rem;
+}
+
+.pt-4 {
+  padding-top: var(--space-4);
+}
+
+.pt-6 {
+  padding-top: var(--space-6);
+}
+
+/* Margin */
+.m-0 {
+  margin: 0;
+}
+
+.m-auto {
+  margin: auto;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-2 {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.my-4 {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.mb-1 {
+  margin-bottom: var(--space-1);
+}
+
+.mb-2 {
+  margin-bottom: var(--space-2);
+}
+
+.mb-3 {
+  margin-bottom: var(--space-3);
+}
+
+.mb-4 {
+  margin-bottom: var(--space-4);
+}
+
+.mb-6 {
+  margin-bottom: var(--space-6);
+}
+
+.mt-2 {
+  margin-top: var(--space-2);
+}
+
+.mt-4 {
+  margin-top: var(--space-4);
+}
+
+.mt-6 {
+  margin-top: var(--space-6);
+}
+
+.mt-auto {
+  margin-top: auto;
+}
+
+/* Width and Height */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.w-screen {
+  width: 100vw;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.max-w-xs {
+  max-width: 20rem;
+}
+
+.max-w-sm {
+  max-width: 24rem;
+}
+
+.max-w-md {
+  max-width: 28rem;
+}
+
+.max-w-lg {
+  max-width: 32rem;
+}
+
+.max-w-xl {
+  max-width: 36rem;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
+}
+
+.max-w-5xl {
+  max-width: 64rem;
+}
+
+.max-w-6xl {
+  max-width: 72rem;
+}
+
+/* Typography Utilities */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-primary {
+  color: var(--primary-11);
+}
+
+.text-success {
+  color: var(--success-11);
+}
+
+.text-danger {
+  color: var(--danger-9);
+}
+
+.text-warning {
+  color: var(--warning-9);
+}
+
+.text-slate-9 {
+  color: var(--slate-9);
+}
+
+.text-slate-10 {
+  color: var(--slate-10);
+}
+
+.text-slate-12 {
+  color: var(--slate-12);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Background Colors */
+.bg-white {
+  background-color: var(--slate-1);
+}
+
+.bg-slate-2 {
+  background-color: var(--slate-2);
+}
+
+.bg-slate-3 {
+  background-color: var(--slate-3);
+}
+
+.bg-primary {
+  background-color: var(--primary-11);
+}
+
+.bg-success {
+  background-color: var(--success-11);
+}
+
+.bg-danger {
+  background-color: var(--danger-9);
+}
+
+.bg-warning {
+  background-color: var(--warning-9);
+}
+
+/* Border Colors */
+.border {
+  border: 1px solid var(--slate-4);
+}
+
+.border-t {
+  border-top: 1px solid var(--slate-4);
+}
+
+.border-b {
+  border-bottom: 1px solid var(--slate-4);
+}
+
+.border-l {
+  border-left: 1px solid var(--slate-4);
+}
+
+.border-r {
+  border-right: 1px solid var(--slate-4);
+}
+
+/* Opacity */
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-75 {
+  opacity: 0.75;
+}
+
+/* Cursor */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
+/* Transitions */
+.transition-colors {
+  transition: background-color var(--duration-fast) var(--timing),
+    border-color var(--duration-fast) var(--timing),
+    color var(--duration-fast) var(--timing);
+}
+
+.transition-all {
+  transition: all var(--duration-fast) var(--timing);
+}
+
+.transition-opacity {
+  transition: opacity var(--duration-fast) var(--timing);
+}
+
+/* ============================================================================
+   11. RESPONSIVE BREAKPOINTS
+   ============================================================================ */
+
+/* Mobile-first approach: base styles apply to all sizes */
+
+/* sm: 640px */
+@media (min-width: 640px) {
+  .sm\:block {
+    display: block;
+  }
+
+  .sm\:hidden {
+    display: none;
+  }
+
+  .sm\:flex {
+    display: flex;
+  }
+
+  .sm\:grid {
+    display: grid;
+  }
+
+  .sm\:p-4 {
+    padding: var(--space-4);
+  }
+
+  .sm\:p-6 {
+    padding: var(--space-6);
+  }
+
+  .sm\:gap-4 {
+    gap: var(--space-4);
+  }
+
+  .sm\:text-sm {
+    font-size: 0.875rem;
+  }
+
+  .sm\:text-base {
+    font-size: 1rem;
+  }
+}
+
+/* md: 768px */
+@media (min-width: 768px) {
+  .md\:block {
+    display: block;
+  }
+
+  .md\:hidden {
+    display: none;
+  }
+
+  .md\:flex {
+    display: flex;
+  }
+
+  .md\:flex-row {
+    flex-direction: row;
+  }
+
+  .md\:flex-col {
+    flex-direction: column;
+  }
+
+  .md\:grid {
+    display: grid;
+  }
+
+  .md\:p-4 {
+    padding: var(--space-4);
+  }
+
+  .md\:p-5 {
+    padding: var(--space-5);
+  }
+
+  .md\:p-6 {
+    padding: var(--space-6);
+  }
+
+  .md\:gap-4 {
+    gap: var(--space-4);
+  }
+
+  .md\:gap-6 {
+    gap: var(--space-6);
+  }
+
+  .md\:text-base {
+    font-size: 1rem;
+  }
+
+  .md\:text-lg {
+    font-size: 1.125rem;
+  }
+
+  .md\:max-w-2xl {
+    max-width: 42rem;
+  }
+}
+
+/* lg: 1024px */
+@media (min-width: 1024px) {
+  .lg\:block {
+    display: block;
+  }
+
+  .lg\:hidden {
+    display: none;
+  }
+
+  .lg\:flex {
+    display: flex;
+  }
+
+  .lg\:grid {
+    display: grid;
+  }
+
+  .lg\:p-6 {
+    padding: var(--space-6);
+  }
+
+  .lg\:gap-6 {
+    gap: var(--space-6);
+  }
+
+  .lg\:text-lg {
+    font-size: 1.125rem;
+  }
+
+  .lg\:max-w-5xl {
+    max-width: 64rem;
+  }
+}
+
+/* xl: 1280px */
+@media (min-width: 1280px) {
+  .xl\:block {
+    display: block;
+  }
+
+  .xl\:hidden {
+    display: none;
+  }
+
+  .xl\:flex {
+    display: flex;
+  }
+
+  .xl\:grid {
+    display: grid;
+  }
+
+  .xl\:p-8 {
+    padding: var(--space-8);
+  }
+}
+
+/* ============================================================================
+   12. DARK MODE UTILITIES
+   ============================================================================ */
+
+.dark\:bg-slate-2 {
+  background-color: var(--slate-2);
+}
+
+.dark\:bg-slate-3 {
+  background-color: var(--slate-3);
+}
+
+.dark\:text-slate-9 {
+  color: var(--slate-9);
+}
+
+.dark\:text-slate-11 {
+  color: var(--slate-11);
+}
+
+.dark\:text-slate-12 {
+  color: var(--slate-12);
+}
+
+.dark\:border-slate-4 {
+  border-color: var(--slate-4);
+}
+
+/* ============================================================================
+   13. PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  button,
+  .btn-primary,
+  .btn-secondary {
+    display: none;
+  }
+}
