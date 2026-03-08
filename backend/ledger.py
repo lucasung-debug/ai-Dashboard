@@ -707,3 +707,61 @@ async def get_dashboard_summary(request: DashboardSummaryRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating dashboard summary: {str(e)}")
+
+
+# ═══ CSV EXPORT ═══
+@app.get("/ledger/export/csv")
+async def export_transactions_csv(month: str = None, transaction_type: str = "all"):
+    """
+    Export transactions to CSV format.
+    - month: YYYY-MM format (required)
+    - transaction_type: all, income, or expense
+    """
+    import csv
+    from io import StringIO
+    from datetime import datetime
+
+    try:
+        txns = _load_json(TRANSACTIONS_FILE, [])
+
+        # Filter by month if provided
+        if month:
+            txns = [t for t in txns if t.get('date', '').startswith(month)]
+
+        # Filter by type
+        if transaction_type != 'all':
+            txns = [t for t in txns if t.get('type') == transaction_type]
+
+        # Sort by date descending
+        txns.sort(key=lambda x: x.get('date', ''), reverse=True)
+
+        # Create CSV
+        output = StringIO()
+        writer = csv.writer(output, encoding='utf-8-sig')  # UTF-8 BOM for Excel
+
+        # Write header
+        writer.writerow(['날짜', '유형', '설명', '카테고리(중)', '카테고리(소)', '금액', '통화', '결제수단', '메모'])
+
+        # Write transactions
+        for t in txns:
+            writer.writerow([
+                t.get('date', ''),
+                t.get('type', ''),
+                t.get('description', ''),
+                t.get('category_medium', ''),
+                t.get('category_small', ''),
+                t.get('amount', 0),
+                t.get('currency', 'KRW'),
+                t.get('payment_method_id', ''),
+                ''
+            ])
+
+        csv_content = output.getvalue()
+
+        return StreamingResponse(
+            iter([csv_content]),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="거래내역_{month or "전체"}.csv"'}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CSV export failed: {str(e)}")

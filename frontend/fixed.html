@@ -38,16 +38,19 @@
                     <p class="text-gray-500 dark:text-dark-muted mt-2 text-sm transition-colors">모든 지출과 구독 현황을 한눈에
                         관리하세요.</p>
                 </div>
-                <!-- 테마 토글 버튼 -->
-                <button onclick="toggleTheme()" id="theme-toggle-btn"
-                    class="p-2.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-dark-muted transition-colors shadow-sm">
-                    <!-- 기본은 달 모양(다크모드 활성 시 해 모양으로 JS에서 변경) -->
-                    <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                        </path>
-                    </svg>
-                </button>
+                <!-- 액션 버튼들 -->
+                <div class="flex gap-2">
+                    <button onclick="exportSubscriptionsCsv()" class="px-3 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium transition-colors">📥 CSV 내보내기</button>
+                    <button onclick="toggleTheme()" id="theme-toggle-btn"
+                        class="p-2.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-gray-500 dark:text-dark-muted hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-dark-muted transition-colors shadow-sm">
+                        <!-- 기본은 달 모양(다크모드 활성 시 해 모양으로 JS에서 변경) -->
+                        <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- 네비게이션 탭 -->
@@ -130,6 +133,41 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Search & Filter Panel for AI Tab -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">검색</label>
+                        <input type="text" id="filter-ai-keyword" placeholder="서비스명 검색"
+                            onkeyup="filterAiSubscriptions()"
+                            class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">상태</label>
+                        <select id="filter-ai-status" onchange="filterAiSubscriptions()" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                            <option value="">전체</option>
+                            <option value="active">활성</option>
+                            <option value="cancelled">취소됨</option>
+                            <option value="trial">체험</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">정렬</label>
+                        <select id="filter-ai-sort" onchange="filterAiSubscriptions()" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                            <option value="date_desc">최신순</option>
+                            <option value="price_desc">가격 높은순</option>
+                            <option value="price_asc">가격 낮은순</option>
+                            <option value="next_billing">결제예정일순</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetAiFilter()" class="text-xs px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">초기화</button>
+                    <span id="filter-ai-count" class="text-xs text-gray-600 dark:text-gray-400 py-1.5"></span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="ai-cards-container">
                 <!-- Data will render here -->
             </div>
@@ -150,6 +188,41 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Search & Filter Panel for General Tab -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">검색</label>
+                        <input type="text" id="filter-general-keyword" placeholder="서비스명 검색"
+                            onkeyup="filterGeneralSubscriptions()"
+                            class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">상태</label>
+                        <select id="filter-general-status" onchange="filterGeneralSubscriptions()" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                            <option value="">전체</option>
+                            <option value="active">활성</option>
+                            <option value="cancelled">취소됨</option>
+                            <option value="trial">체험</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">정렬</label>
+                        <select id="filter-general-sort" onchange="filterGeneralSubscriptions()" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary-500 dark:text-white">
+                            <option value="date_desc">최신순</option>
+                            <option value="price_desc">가격 높은순</option>
+                            <option value="price_asc">가격 낮은순</option>
+                            <option value="next_billing">결제예정일순</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetGeneralFilter()" class="text-xs px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">초기화</button>
+                    <span id="filter-general-count" class="text-xs text-gray-600 dark:text-gray-400 py-1.5"></span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="general-cards-container">
                 <!-- Data will render here -->
             </div>
@@ -1112,6 +1185,106 @@
                 }
             });
             renderDataByTab();
+            // Apply filters when switching to AI or General tabs
+            if (tabId === 'ai') filterAiSubscriptions();
+            else if (tabId === 'general') filterGeneralSubscriptions();
+        }
+
+        // Filter functions for AI subscriptions
+        function filterAiSubscriptions() {
+            const keyword = (document.getElementById('filter-ai-keyword') || {}).value?.toLowerCase() || '';
+            const statusFilter = (document.getElementById('filter-ai-status') || {}).value || '';
+            const sortBy = (document.getElementById('filter-ai-sort') || {}).value || 'date_desc';
+
+            let filtered = allSubscriptions.filter(s => {
+                if (s.category !== 'AI 구독료') return false;
+                if (keyword && !s.name.toLowerCase().includes(keyword)) return false;
+                if (statusFilter === 'active' && !s.active) return false;
+                if (statusFilter === 'cancelled' && !s.cancel_scheduled) return false;
+                if (statusFilter === 'trial' && !s.trial) return false;
+                return true;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                if (sortBy === 'date_desc') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                if (sortBy === 'price_desc') return b.price - a.price;
+                if (sortBy === 'price_asc') return a.price - b.price;
+                if (sortBy === 'next_billing') return new Date(a.next_billing) - new Date(b.next_billing);
+                return 0;
+            });
+
+            document.getElementById('filter-ai-count').textContent = `${filtered.length}개`;
+            renderSubscriptionCards(filtered, 'ai-cards-container');
+        }
+
+        function resetAiFilter() {
+            const inputs = ['filter-ai-keyword', 'filter-ai-status', 'filter-ai-sort'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.tagName === 'INPUT') el.value = '';
+                    else if (el.tagName === 'SELECT') el.value = el.id.includes('sort') ? 'date_desc' : '';
+                }
+            });
+            filterAiSubscriptions();
+        }
+
+        // Filter functions for General subscriptions
+        function filterGeneralSubscriptions() {
+            const keyword = (document.getElementById('filter-general-keyword') || {}).value?.toLowerCase() || '';
+            const statusFilter = (document.getElementById('filter-general-status') || {}).value || '';
+            const sortBy = (document.getElementById('filter-general-sort') || {}).value || 'date_desc';
+
+            let filtered = allSubscriptions.filter(s => {
+                if (s.category === 'AI 구독료') return false;
+                if (keyword && !s.name.toLowerCase().includes(keyword)) return false;
+                if (statusFilter === 'active' && !s.active) return false;
+                if (statusFilter === 'cancelled' && !s.cancel_scheduled) return false;
+                if (statusFilter === 'trial' && !s.trial) return false;
+                return true;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                if (sortBy === 'date_desc') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                if (sortBy === 'price_desc') return b.price - a.price;
+                if (sortBy === 'price_asc') return a.price - b.price;
+                if (sortBy === 'next_billing') return new Date(a.next_billing) - new Date(b.next_billing);
+                return 0;
+            });
+
+            document.getElementById('filter-general-count').textContent = `${filtered.length}개`;
+            renderSubscriptionCards(filtered, 'general-cards-container');
+        }
+
+        function resetGeneralFilter() {
+            const inputs = ['filter-general-keyword', 'filter-general-status', 'filter-general-sort'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.tagName === 'INPUT') el.value = '';
+                    else if (el.tagName === 'SELECT') el.value = el.id.includes('sort') ? 'date_desc' : '';
+                }
+            });
+            filterGeneralSubscriptions();
+        }
+
+        // CSV Export function
+        async function exportSubscriptionsCsv() {
+            const url = `${API_BASE_URL}/subscriptions/export/csv`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Export failed');
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '구독목록.csv';
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (e) {
+                alert('CSV 내보내기 실패: ' + e.message);
+            }
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
