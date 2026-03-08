@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+
+    <!-- CSS Stylesheets - Core Design System -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="transition-colors">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER COMPONENT
+         ════════════════════════════════════════════════════════════ -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-logo">
+                💰 ai-Dashboard
+            </h1>
+
+            <!-- Top Navigation Links (Desktop) -->
+            <nav class="header-nav">
+                <a href="index.html" class="active">가계부</a>
+                <a href="fixed.html">고정비</a>
+            </nav>
+
+            <!-- Action Buttons (Top Right) -->
+            <div class="header-actions">
+                <button id="btn-search" title="검색" class="header-action-btn">🔍</button>
+                <button id="theme-toggle-btn" title="테마 전환" class="header-action-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ════════════════════════════════════════════════════════════ -->
+    <main class="container-compact">
+
+        <!-- Section: Hero / Title -->
+        <section class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Page Title</h1>
+            <p class="text-slate-9 dark:text-slateD-9">Brief description of the page content.</p>
+        </section>
+
+        <!-- Section: Cards Grid (Responsive) -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Summary Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="card">
+                    <p class="text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">Label</p>
+                    <p class="text-2xl font-bold text-slate-12 dark:text-slateD-12">Value</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card card-interactive">
+                    <p class="text-xs font-medium text-success-11 mb-2">Success</p>
+                    <p class="text-2xl font-bold text-success-11">Success Value</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card card-accent accent-danger">
+                    <p class="text-xs font-medium text-danger-9 mb-2">Attention</p>
+                    <p class="text-2xl font-bold text-danger-9">Alert Value</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Buttons -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Button Variations</h2>
+            <div class="flex flex-wrap gap-4">
+                <button class="btn-primary">Primary Action</button>
+                <button class="btn-secondary">Secondary Action</button>
+                <button class="btn-danger">Delete</button>
+                <button class="btn-success">Confirm</button>
+                <button class="btn-ghost">✕ Close</button>
+            </div>
+        </section>
+
+        <!-- Section: Form -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Form Example</h2>
+            <div class="card">
+                <form id="example-form">
+                    <div class="form-group">
+                        <label class="form-label required">Name</label>
+                        <input type="text" class="form-input" placeholder="Enter name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Email</label>
+                        <input type="email" class="form-input" placeholder="Enter email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-textarea" placeholder="Enter message"></textarea>
+                        <p class="form-hint">Optional message field</p>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit" class="btn-primary flex-1">Submit</button>
+                        <button type="reset" class="btn-secondary flex-1">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section: Table -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Table Example</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th class="text-right">Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>john@example.com</td>
+                            <td class="text-right">$1,200</td>
+                            <td>
+                                <span class="badge badge-success">Active</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>jane@example.com</td>
+                            <td class="text-right">$2,500</td>
+                            <td>
+                                <span class="badge badge-primary">Pending</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section: Tabs -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Tabs Example</h2>
+
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab-btn="tab1" onclick="switchTab('tab1')">Tab 1</button>
+                <button class="tab-btn" data-tab-btn="tab2" onclick="switchTab('tab2')">Tab 2</button>
+                <button class="tab-btn" data-tab-btn="tab3" onclick="switchTab('tab3')">Tab 3</button>
+            </nav>
+
+            <div class="mt-4">
+                <div id="tab1" data-tab-content="tab1" class="card">
+                    <h3 class="font-semibold mb-2">Tab 1 Content</h3>
+                    <p class="text-slate-9 dark:text-slateD-9">This is the content for tab 1.</p>
+                </div>
+
+                <div id="tab2" data-tab-content="tab2" class="card hidden">
+                    <h3 class="font-semibold mb-2">Tab 2 Content</h3>
+                    <p class="text-slate-9 dark:text-slateD-9">This is the content for tab 2.</p>
+                </div>
+
+                <div id="tab3" data-tab-content="tab3" class="card hidden">
+                    <h3 class="font-semibold mb-2">Tab 3 Content</h3>
+                    <p class="text-slate-9 dark:text-slateD-9">This is the content for tab 3.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Progress Bar -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Progress Example</h2>
+            <div class="card">
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Project Completion</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Alert / Notifications -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Alerts & Badges</h2>
+
+            <div class="space-y-4">
+                <!-- Alert -->
+                <div class="alert alert-success">
+                    ✓ This is a success alert message.
+                </div>
+
+                <div class="alert alert-danger">
+                    ✕ This is a danger alert message.
+                </div>
+
+                <div class="alert alert-warning">
+                    ⚠ This is a warning alert message.
+                </div>
+
+                <!-- Badges -->
+                <div class="flex flex-wrap gap-2">
+                    <span class="badge">Default</span>
+                    <span class="badge badge-primary">Primary</span>
+                    <span class="badge badge-success">Success</span>
+                    <span class="badge badge-danger">Danger</span>
+                    <span class="badge badge-warning">Warning</span>
+                </div>
+
+                <!-- Pill Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button class="pill-btn active">Active Filter</button>
+                    <button class="pill-btn">Inactive Filter</button>
+                    <button class="pill-btn">Another Filter</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL EXAMPLE
+         ════════════════════════════════════════════════════════════ -->
+    <div id="example-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('example-modal')">
+        <div class="modal-body">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2>Modal Title</h2>
+                <button class="modal-close-btn" data-close-modal="example-modal">✕</button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="modal-content">
+                <p class="mb-4">This is the modal content. You can add forms, images, or any other content here.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" placeholder="Enter name">
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button class="btn-secondary" data-close-modal="example-modal">Cancel</button>
+                <button class="btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FLOATING ACTION BUTTON
+         ════════════════════════════════════════════════════════════ -->
+    <button class="fab" onclick="openModal('example-modal')" title="Open modal">+</button>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCRIPTS
+         ════════════════════════════════════════════════════════════ -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
+
+    <script>
+        /**
+         * Example: Initialize your page with theme system
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page initialized');
+            console.log('Current theme:', getTheme());
+
+            // Example: Show notification
+            // showSuccess('Page loaded successfully!');
+        });
+
+        /**
+         * Example: Tab switching (using built-in switchTab function from ui.js)
+         * HTML: <button onclick="switchTab('tab1')">Tab 1</button>
+         * Content divs should have data-tab-content attribute matching the tab name
+         */
+
+        /**
+         * Example: Modal operations
+         * Open: openModal('example-modal')
+         * Close: closeModal('example-modal')
+         * Toggle: toggleModal('example-modal')
+         */
+
+        /**
+         * Example: API call
+         * const data = await apiGet('/endpoint');
+         * const result = await apiPost('/endpoint', { key: 'value' });
+         */
+    </script>
+
+</body>
+
+</html>
