@@ -41,11 +41,14 @@ backend/data/
 Thumbs.db
 
 # ============================================================================
-# Node.js (if used)
+# Node.js / Frontend
 # ============================================================================
 node_modules/
 package-lock.json
 yarn.lock
+frontend/dist/
+frontend/.env
+frontend/.env.local
 
 # ============================================================================
 # Logs

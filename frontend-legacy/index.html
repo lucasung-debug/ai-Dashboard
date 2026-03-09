@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가계부 — Household Ledger</title>
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="assets/styles/globals.css">
+    <link rel="stylesheet" href="assets/styles/components.css">
+    <link rel="stylesheet" href="assets/styles/layout.css">
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body class="transition-colors">
+    <!-- ═══ TOP HEADER ═══ -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-logo">
+                💰 가계부
+            </h1>
+            <div class="header-actions">
+                <button id="btn-calc" title="계산기" class="header-action-btn">🧮</button>
+                <button id="theme-toggle-btn" title="테마 전환" class="header-action-btn">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ TAB NAVIGATION ═══ -->
+    <nav class="tab-nav hide-scrollbar max-w-5xl mx-auto border-b border-slate-4 dark:border-slateD-4">
+        <button class="tab-btn active" data-tab-btn="dashboard" onclick="switchTab('dashboard')">대시보드</button>
+        <button class="tab-btn" data-tab-btn="list" onclick="switchTab('list')">내역</button>
+        <button class="tab-btn" data-tab-btn="upload" onclick="switchTab('upload')">엑셀 업로드</button>
+        <button class="tab-btn" data-tab-btn="settings" onclick="switchTab('settings')">설정</button>
+        <a href="reports.html" class="tab-btn" style="text-decoration: none;">📊 보고서 →</a>
+        <a href="settings.html" class="tab-btn" style="text-decoration: none;">⚙️ 설정 →</a>
+        <a href="fixed.html" class="tab-btn ml-auto" style="text-decoration: none;">📺 고정비 관리 →</a>
+    </nav>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        <!-- ── DASHBOARD VIEW ── -->
+        <section id="view-dashboard" class="py-6 space-y-6 anim-fade">
+            <!-- Month Selector -->
+            <div class="flex items-center justify-between">
+                <button onclick="changeMonth(-1)"
+                    class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3 text-slate-9">◀</button>
+                <h2 id="current-month-label" class="text-lg font-bold"></h2>
+                <button onclick="changeMonth(1)"
+                    class="p-2 rounded-lg hover:bg-slate-3 dark:hover:bg-slateD-3 text-slate-9">▶</button>
+            </div>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white dark:bg-slateD-2 rounded-2xl p-4 border border-slate-4 dark:border-slateD-4">
+                    <p class="text-[11px] font-medium text-mint-11 dark:text-mintD-11 mb-1">수입</p>
+                    <p id="sum-income" class="text-lg font-bold text-mint-12 dark:text-mintD-12 tabular-nums">₩0</p>
+                </div>
+                <div class="bg-white dark:bg-slateD-2 rounded-2xl p-4 border border-slate-4 dark:border-slateD-4">
+                    <p class="text-[11px] font-medium text-ruby-11 dark:text-rubyD-11 mb-1">지출</p>
+                    <p id="sum-expense" class="text-lg font-bold text-ruby-12 dark:text-rubyD-12 tabular-nums">₩0</p>
+                </div>
+                <div class="bg-white dark:bg-slateD-2 rounded-2xl p-4 border border-slate-4 dark:border-slateD-4">
+                    <p class="text-[11px] font-medium text-primary-11 dark:text-primaryD-11 mb-1">잔여</p>
+                    <p id="sum-balance" class="text-lg font-bold tabular-nums">₩0</p>
+                </div>
+            </div>
+            <!-- Budget Progress -->
+            <div id="budget-section"
+                class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-xs font-medium text-slate-9 dark:text-slateD-9">월 예산 목표</p>
+                    <button onclick="openBudgetModal()" class="text-xs text-primary-9 hover:underline">설정</button>
+                </div>
+                <div class="w-full bg-slate-3 dark:bg-slateD-4 rounded-full h-3 mb-1.5">
+                    <div id="budget-bar" class="h-3 rounded-full bg-primary-9 transition-all" style="width:0%"></div>
+                </div>
+                <p id="budget-text" class="text-[11px] text-slate-9 dark:text-slateD-9"></p>
+            </div>
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4">
+                    <p class="text-xs font-medium text-slate-9 dark:text-slateD-9 mb-3">카테고리별 지출</p>
+                    <div class="relative h-48"><canvas id="chart-category"></canvas></div>
+                </div>
+                <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4">
+                    <p class="text-xs font-medium text-slate-9 dark:text-slateD-9 mb-3">일별 지출 추이</p>
+                    <div class="relative h-48"><canvas id="chart-daily"></canvas></div>
+                </div>
+            </div>
+            <!-- Recent Transactions Preview -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl border border-slate-4 dark:border-slateD-4">
+                <div class="flex justify-between items-center p-4 pb-2">
+                    <p class="text-sm font-bold">최근 내역</p>
+                    <button onclick="switchView('list')" class="text-xs text-primary-9 hover:underline">전체보기 →</button>
+                </div>
+                <div id="recent-txns" class="divide-y divide-slate-3 dark:divide-slateD-4"></div>
+            </div>
+        </section>
+
+        <!-- ── LIST VIEW ── -->
+        <section id="view-list" class="py-6 space-y-4 hidden">
+            <!-- Type Filter -->
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold">내역 조회</h2>
+                <div class="flex gap-1.5 text-xs">
+                    <button onclick="setTypeFilter('all')" data-filter="all"
+                        class="px-3 py-1.5 rounded-full bg-primary-9 text-white font-medium">전체</button>
+                    <button onclick="setTypeFilter('income')" data-filter="income"
+                        class="px-3 py-1.5 rounded-full bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11">수입</button>
+                    <button onclick="setTypeFilter('expense')" data-filter="expense"
+                        class="px-3 py-1.5 rounded-full bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11">지출</button>
+                    <button onclick="setTypeFilter('transfer')" data-filter="transfer"
+                        class="px-3 py-1.5 rounded-full bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11">이체</button>
+                </div>
+            </div>
+
+            <!-- Search & Filter Panel -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-4 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Keyword Search -->
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">검색어</label>
+                        <input type="text" id="filter-keyword" placeholder="설명/메모 키워드"
+                            onkeyup="applyFilters()"
+                            class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary-9">
+                    </div>
+                    <!-- Date From -->
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">시작 날짜</label>
+                        <input type="date" id="filter-date-from"
+                            onchange="applyFilters()"
+                            class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary-9">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Date To -->
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">종료 날짜</label>
+                        <input type="date" id="filter-date-to"
+                            onchange="applyFilters()"
+                            class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary-9">
+                    </div>
+                    <!-- Sort -->
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">정렬</label>
+                        <select id="filter-sort" onchange="applyFilters()" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary-9">
+                            <option value="date_desc">최신순</option>
+                            <option value="date_asc">오래된순</option>
+                            <option value="amount_desc">금액 큰순</option>
+                            <option value="amount_asc">금액 작은순</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetFilters()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11 hover:bg-slate-4 dark:hover:bg-slateD-5 transition-colors">초기화</button>
+                    <span id="filter-count" class="text-xs text-slate-9 dark:text-slateD-9 py-1.5"></span>
+                </div>
+            </div>
+
+            <!-- Transaction List -->
+            <div id="txn-list" class="space-y-2"></div>
+
+            <!-- Pagination -->
+            <div id="pagination-container" class="flex items-center justify-center gap-2 mt-6">
+                <button onclick="changePage(-1)" class="px-3 py-2 rounded-lg bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11 hover:bg-slate-4 dark:hover:bg-slateD-5 transition-colors text-xs font-medium">이전</button>
+                <span id="pagination-info" class="text-xs text-slate-9 dark:text-slateD-9"></span>
+                <button onclick="changePage(1)" class="px-3 py-2 rounded-lg bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11 hover:bg-slate-4 dark:hover:bg-slateD-5 transition-colors text-xs font-medium">다음</button>
+            </div>
+        </section>
+
+        <!-- ── UPLOAD VIEW ── -->
+        <section id="view-upload" class="py-6 space-y-5 hidden">
+            <h2 class="text-base font-bold">📊 엑셀/CSV 일괄 업로드</h2>
+            <div id="drop-zone"
+                class="border-2 border-dashed border-slate-5 dark:border-slateD-5 rounded-2xl p-10 text-center cursor-pointer hover:border-primary-9 transition-colors">
+                <p class="text-3xl mb-2">📁</p>
+                <p class="text-sm text-slate-9 dark:text-slateD-9">파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
+                <p class="text-[11px] text-slate-8 dark:text-slateD-8 mt-1">.xlsx, .xls, .csv 지원</p>
+                <input type="file" id="file-input" accept=".xlsx,.xls,.csv" class="hidden">
+            </div>
+            <div id="upload-preview" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-bold">자동 분류 결과 미리보기</p>
+                    <span id="upload-count" class="text-xs text-slate-9"></span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr
+                                class="text-left text-slate-9 dark:text-slateD-9 border-b border-slate-4 dark:border-slateD-4">
+                                <th class="py-2 px-2">날짜</th>
+                                <th class="py-2 px-2">내용</th>
+                                <th class="py-2 px-2">금액</th>
+                                <th class="py-2 px-2">유형</th>
+                                <th class="py-2 px-2">중분류</th>
+                                <th class="py-2 px-2">소분류</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upload-table-body"></tbody>
+                    </table>
+                </div>
+                <button onclick="confirmUpload()"
+                    class="w-full py-3 bg-primary-9 hover:bg-primary-10 text-white rounded-xl font-medium transition-colors">✅
+                    일괄 등록</button>
+            </div>
+        </section>
+
+        <!-- ── SETTINGS VIEW ── -->
+        <section id="view-settings" class="py-6 space-y-5 hidden">
+            <h2 class="text-base font-bold">⚙️ 설정</h2>
+            <!-- Assets -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">결제수단 / 자산</p><button onclick="openAssetModal()"
+                        class="text-xs text-primary-9 hover:underline">+ 추가</button>
+                </div>
+                <div id="assets-list" class="space-y-2"></div>
+            </div>
+            <!-- 테마 및 아이콘 설정 -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-sm font-bold">테마 색상 커스텀</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="changeThemeColor('indigo')" class="w-8 h-8 rounded-full bg-[#3e63dd] ring-2 ring-offset-2 ring-transparent ring-offset-white dark:ring-offset-slateD-1 transition hover:scale-110"></button>
+                    <button onclick="changeThemeColor('pink')" class="w-8 h-8 rounded-full bg-[#d6409f] ring-2 ring-offset-2 ring-transparent ring-offset-white dark:ring-offset-slateD-1 transition hover:scale-110"></button>
+                    <button onclick="changeThemeColor('cyan')" class="w-8 h-8 rounded-full bg-[#00a2c7] ring-2 ring-offset-2 ring-transparent ring-offset-white dark:ring-offset-slateD-1 transition hover:scale-110"></button>
+                    <button onclick="changeThemeColor('amber')" class="w-8 h-8 rounded-full bg-[#ffb224] ring-2 ring-offset-2 ring-transparent ring-offset-white dark:ring-offset-slateD-1 transition hover:scale-110"></button>
+                    <button onclick="changeThemeColor('green')" class="w-8 h-8 rounded-full bg-[#30a46c] ring-2 ring-offset-2 ring-transparent ring-offset-white dark:ring-offset-slateD-1 transition hover:scale-110"></button>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">카테고리 이모지 매핑</p>
+                    <button onclick="editCategoryEmoji()" class="text-xs text-primary-9 hover:underline">수정</button>
+                </div>
+                <div id="emoji-list" class="text-xs text-slate-9 flex flex-wrap gap-2 mt-2"></div>
+            </div>
+
+            <!-- Exchange rates -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">환율 (실시간)</p><button onclick="refreshRates()"
+                        class="text-xs text-primary-9 hover:underline">🔄 새로고침</button>
+                </div>
+                <div id="rates-display" class="text-xs text-slate-9 dark:text-slateD-9 space-y-1"></div>
+            </div>
+
+            <!-- Data Export -->
+            <div class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <p class="text-sm font-bold">📥 데이터 내보내기</p>
+                <div class="space-y-2">
+                    <p class="text-xs text-slate-9 dark:text-slateD-9 mb-2">현재 월: <span id="export-month-label"></span></p>
+                    <button onclick="exportTransactionsCsv()" class="w-full py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">📊 거래 내역 CSV 다운로드</button>
+                </div>
+            </div>
+
+            <!-- ═══ CATEGORY BUDGETS SECTION ═══ -->
+            <div id="category-budgets-section" class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">📊 카테고리별 예산</p>
+                    <button onclick="openCategoryBudgetModal()" class="text-xs text-primary-9 hover:underline">+ 예산 추가</button>
+                </div>
+                <div id="category-budgets-container" class="space-y-3">
+                    <p class="text-xs text-slate-9">설정된 예산이 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- CATEGORY BUDGET MODAL -->
+            <div id="category-budget-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeCategoryBudgetModal()">
+                <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+                    <div class="p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold">예산 설정</h3>
+                            <button onclick="closeCategoryBudgetModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                        </div>
+                        <form id="category-budget-form" onsubmit="saveCategoryBudget(event)">
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">카테고리</label>
+                                <select id="budget-category-select" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" required>
+                                    <option value="">카테고리 선택</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">예산 금액 (₩)</label>
+                                <input type="number" id="budget-amount-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums" min="0" step="1000" required />
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">저장</button>
+                                <button type="button" class="flex-1 py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-9 rounded-lg text-sm font-medium transition-colors" onclick="closeCategoryBudgetModal()">취소</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SAVINGS GOALS SECTION ═══ -->
+            <div id="savings-goals-section" class="bg-white dark:bg-slateD-2 rounded-2xl p-5 border border-slate-4 dark:border-slateD-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-bold">🎯 절약 목표</p>
+                    <button onclick="openSavingsGoalModal()" class="text-xs text-primary-9 hover:underline">+ 목표 추가</button>
+                </div>
+                <div id="savings-goals-container" class="space-y-3">
+                    <p class="text-xs text-slate-9">설정된 목표가 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- SAVINGS GOAL MODAL -->
+            <div id="savings-goal-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSavingsGoalModal()">
+                <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+                    <div class="p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold">목표 추가</h3>
+                            <button onclick="closeSavingsGoalModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                        </div>
+                        <form id="savings-goal-form" onsubmit="saveSavingsGoal(event)">
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">목표 이름</label>
+                                <input type="text" id="goal-name-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" placeholder="예: 여행 저축" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">목표 금액 (₩)</label>
+                                <input type="number" id="goal-target-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums" min="0" step="10000" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">기한</label>
+                                <input type="date" id="goal-deadline-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-slate-9 dark:text-slateD-9 mb-2">설명 (선택)</label>
+                                <textarea id="goal-description-input" class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9" rows="2" placeholder="목표에 대한 설명"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 py-2.5 bg-primary-9 hover:bg-primary-10 text-white rounded-lg text-sm font-medium transition-colors">저장</button>
+                                <button type="button" class="flex-1 py-2.5 bg-slate-3 dark:bg-slateD-3 hover:bg-slate-4 dark:hover:bg-slateD-4 text-slate-9 rounded-lg text-sm font-medium transition-colors" onclick="closeSavingsGoalModal()">취소</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ═══ FAB (Floating Action Button) ═══ -->
+    <button onclick="openTxnModal()" class="fab bg-primary-9 hover:bg-primary-10 text-white text-2xl">+</button>
+
+    <!-- ═══ TRANSACTION MODAL ═══ -->
+    <div id="txn-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeTxnModal()">
+        <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+            <div class="p-5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-base font-bold">내역 입력</h3>
+                    <button onclick="closeTxnModal()" class="text-slate-9 dark:text-slateD-9 text-lg">✕</button>
+                </div>
+                <!-- Type tabs -->
+                <div class="flex gap-1 bg-slate-3 dark:bg-slateD-3 rounded-xl p-1">
+                    <button onclick="setTxnType('expense')" data-txn-type="expense"
+                        class="flex-1 py-2 rounded-lg text-xs font-medium bg-ruby-9 text-white">지출</button>
+                    <button onclick="setTxnType('income')" data-txn-type="income"
+                        class="flex-1 py-2 rounded-lg text-xs font-medium text-slate-9 dark:text-slateD-9">수입</button>
+                    <button onclick="setTxnType('transfer')" data-txn-type="transfer"
+                        class="flex-1 py-2 rounded-lg text-xs font-medium text-slate-9 dark:text-slateD-9">이체</button>
+                </div>
+                <input type="hidden" id="txn-id" value="">
+                <input type="hidden" id="txn-type" value="expense">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">금액</label>
+                    <div class="flex gap-2">
+                        <select id="txn-currency"
+                            class="w-20 bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-2 py-2.5 text-sm outline-none">
+                            <option value="KRW">₩</option>
+                            <option value="USD">$</option>
+                            <option value="JPY">¥</option>
+                        </select>
+                        <input type="number" id="txn-amount" placeholder="0"
+                            class="flex-1 bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums"
+                            step="1">
+                    </div>
+                </div>
+                <!-- Date -->
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">날짜</label>
+                    <input type="date" id="txn-date"
+                        class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                </div>
+                <!-- Category (cascading) -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">중분류</label>
+                        <select id="txn-cat-med" onchange="populateSmallCategories()"
+                            class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 mb-1"></select>
+                        <input type="text" id="txn-cat-med-input" placeholder="직접입력"
+                            class="hidden w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">소분류</label>
+                        <select id="txn-cat-small" onchange="checkSmallOther()"
+                            class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 mb-1"></select>
+                        <input type="text" id="txn-cat-small-input" placeholder="직접입력"
+                            class="hidden w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                    </div>
+                </div>
+                <!-- Payment method + Description -->
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">결제수단</label>
+                    <select id="txn-payment"
+                        class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1">내용 / 메모</label>
+                    <input type="text" id="txn-desc" placeholder="예: 스타벅스 아메리카노"
+                        class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9">
+                </div>
+                <button onclick="saveTxn()"
+                    class="w-full py-3 bg-primary-9 hover:bg-primary-10 text-white rounded-xl font-medium transition-colors">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ BUDGET MODAL ═══ -->
+    <div id="budget-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up">
+            <div class="p-5 space-y-4">
+                <h3 class="text-base font-bold">월 예산 설정</h3>
+                <input type="number" id="budget-amount" placeholder="예: 2000000"
+                    class="w-full bg-slate-2 dark:bg-slateD-3 border border-slate-5 dark:border-slateD-5 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary-9 tabular-nums">
+                <button onclick="saveBudget()"
+                    class="w-full py-3 bg-primary-9 hover:bg-primary-10 text-white rounded-xl font-medium transition-colors">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ CALCULATOR WIDGET ═══ -->
+    <div id="calc-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="modal-body bg-white dark:bg-slateD-2 border-t border-slate-4 dark:border-slateD-4 anim-slide-up"
+            style="max-width:320px">
+            <div class="p-4">
+                <input id="calc-display" readonly
+                    class="w-full bg-slate-2 dark:bg-slateD-3 rounded-xl px-4 py-3 text-right text-xl font-bold mb-3 tabular-nums outline-none"
+                    value="0">
+                <div id="calc-keys" class="grid grid-cols-4 gap-1.5"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API = '/api/ledger';
+                const THEMES = {
+            indigo: { l: { 9: '#3e63dd', 10: '#3358d4', 11: '#3a5bc7', 12: '#1f2d5c' }, d: { 9: '#3e63dd', 10: '#5472e4', 11: '#9eb1ff', 12: '#d6e1ff' } },
+            pink: { l: { 9: '#d6409f', 10: '#d33398', 11: '#c22b8c', 12: '#5f1843' }, d: { 9: '#f65cb6', 10: '#f975c1', 11: '#ffb2e2', 12: '#ffd9f0' } },
+            cyan: { l: { 9: '#00a2c7', 10: '#0097ba', 11: '#0084a4', 12: '#0d3c48' }, d: { 9: '#00a2c7', 10: '#23b4d2', 11: '#6ed1e6', 12: '#bcebf4' } },
+            amber: { l: { 9: '#ffb224', 10: '#f5a623', 11: '#ad5700', 12: '#4f3422' }, d: { 9: '#ffc53d', 10: '#ffd60a', 11: '#ffe66d', 12: '#fff2b2' } },
+            green: { l: { 9: '#30a46c', 10: '#2b9a66', 11: '#218358', 12: '#193b2d' }, d: { 9: '#4cc38a', 10: '#5fd397', 11: '#9beea6', 12: '#ccebd7' } }
+        };
+        let categoryEmojis = JSON.parse(localStorage.getItem('categoryEmojis') || '{}');
+        
+        function changeThemeColor(colorName) {
+            const t = THEMES[colorName];
+            if (!t) return;
+            localStorage.setItem('ledger-color', colorName);
+            const r = document.querySelector(':root');
+            r.style.setProperty('--primary-9', t.l['9']); r.style.setProperty('--primary-10', t.l['10']);
+            r.style.setProperty('--primary-11', t.l['11']); r.style.setProperty('--primary-12', t.l['12']);
+            r.style.setProperty('--primaryD-9', t.d['9']); r.style.setProperty('--primaryD-10', t.d['10']);
+            r.style.setProperty('--primaryD-11', t.d['11']); r.style.setProperty('--primaryD-12', t.d['12']);
+        }
+        function getCategoryEmoji(catName, defIcon) {
+            return categoryEmojis[catName] || defIcon;
+        }
+        function renderCategoryEmojis() {
+            const el = document.getElementById('emoji-list');
+            if(!el) return;
+            el.innerHTML = Object.entries(categoryEmojis).length ? 
+                Object.entries(categoryEmojis).map(([k,v]) => `<span class="bg-slate-3 dark:bg-slateD-4 px-2 py-1 rounded-lg">${v} ${esc(k)}</span>`).join('') 
+                : '설정된 이모지가 없습니다.';
+        }
+        function editCategoryEmoji() {
+            const cat = prompt("이모지를 변경할 카테고리 이름을 정확히 입력하세요 (예: 카페/간식):");
+            if(!cat) return;
+            const emoji = prompt(`[${cat}]에 표시될 이모지를 입력하세요 (삭제하려면 비워두세요):`);
+            if(emoji) {
+                categoryEmojis[cat] = emoji;
+            } else {
+                delete categoryEmojis[cat];
+            }
+            localStorage.setItem('categoryEmojis', JSON.stringify(categoryEmojis));
+            renderCategoryEmojis();
+            loadData();
+        }
+
+        let allTxns = [], allAssets = [], allCategories = {}, allBudgets = [], exchangeRates = {};
+        let currentMonth = new Date().toISOString().slice(0, 7);
+        let currentFilter = 'all', chartCat = null, chartDaily = null, uploadPreviewData = [];
+
+        // Filter state management for transaction list
+        let filterState = {
+            keyword: '',
+            dateFrom: '',
+            dateTo: '',
+            typeFilter: 'all',
+            sortBy: 'date_desc',
+            page: 1,
+            pageSize: 20,
+            filteredTxns: []
+        };
+        function esc(s) { return s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+        function fmt(n, c = 'KRW') { return c === 'KRW' ? '₩' + Math.round(n).toLocaleString() : c === 'USD' ? '$' + n.toFixed(2) : '¥' + Math.round(n).toLocaleString(); }
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('ledger-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
+        function changeMonth(d) { const [y, m] = currentMonth.split('-').map(Number); const dt = new Date(y, m - 1 + d, 1); currentMonth = dt.toISOString().slice(0, 7); loadData(); }
+
+        function switchTab(v) {
+            ['dashboard', 'list', 'upload', 'settings'].forEach(id => {
+                document.getElementById('view-' + id).classList.toggle('hidden', id !== v);
+            });
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-tab-btn') === v);
+            });
+            if (v === 'settings') {
+                loadAssets();
+                loadRates();
+            } else if (v === 'list') {
+                applyFilters();
+            }
+        }
+
+        function switchView(v) {
+            document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('tab-active', b.dataset.view === v); b.classList.toggle('text-slate-9', b.dataset.view !== v); });
+            ['dashboard', 'list', 'upload', 'settings'].forEach(id => { document.getElementById('view-' + id).classList.toggle('hidden', id !== v); });
+            if (v === 'settings') { loadAssets(); loadRates(); }
+            else if (v === 'list') { applyFilters(); }
+        }
+        async function fetchJSON(url) { const r = await fetch(url); return (await r.json()).data; }
+        async function loadData() {
+            const monthLabel = currentMonth.replace('-', '년 ') + '월';
+            document.getElementById('current-month-label').textContent = monthLabel;
+            document.getElementById('export-month-label').textContent = monthLabel;
+            try { [allTxns, allCategories, allBudgets] = await Promise.all([fetchJSON(API + '/transactions?month=' + currentMonth), fetchJSON(API + '/categories'), fetchJSON(API + '/budgets')]); } catch (e) { console.error(e); }
+            renderDashboard();
+            // If list view is active, apply filters to refresh
+            if (!document.getElementById('view-list').classList.contains('hidden')) {
+                applyFilters();
+            }
+        }
+        function renderDashboard() {
+            let inc = 0, exp = 0; allTxns.forEach(t => { if (t.type === 'income') inc += t.amount; else if (t.type === 'expense') exp += t.amount; });
+            document.getElementById('sum-income').textContent = fmt(inc); document.getElementById('sum-expense').textContent = fmt(exp);
+            const bal = inc - exp, balEl = document.getElementById('sum-balance'); balEl.textContent = fmt(bal);
+            balEl.className = 'text-lg font-bold tabular-nums ' + (bal >= 0 ? 'text-mint-12 dark:text-mintD-12' : 'text-ruby-12 dark:text-rubyD-12');
+            const mb = allBudgets.find(b => b.month === currentMonth), budgetAmt = mb ? mb.amount : 0;
+            if (budgetAmt > 0) { const pct = Math.min(100, (exp / budgetAmt) * 100); document.getElementById('budget-bar').style.width = pct + '%'; document.getElementById('budget-bar').className = 'h-3 rounded-full transition-all ' + (pct > 90 ? 'bg-ruby-9' : pct > 70 ? 'bg-amber-9' : 'bg-primary-9'); document.getElementById('budget-text').textContent = `${fmt(exp)} / ${fmt(budgetAmt)} (${pct.toFixed(0)}%)`; }
+            else { document.getElementById('budget-bar').style.width = '0%'; document.getElementById('budget-text').textContent = '예산을 설정하면 진행률이 표시됩니다'; }
+            const catMap = {}; allTxns.filter(t => t.type === 'expense').forEach(t => { catMap[t.category_medium] = (catMap[t.category_medium] || 0) + t.amount; });
+            const labels = Object.keys(catMap), data = Object.values(catMap), colors = ['#3e63dd', '#e54666', '#ffc53d', '#86ead4', '#8da4ef', '#dc3b5d', '#7dd6c2', '#ffba18', '#abbdf9', '#ec5a72'];
+            if (chartCat) chartCat.destroy(); chartCat = new Chart(document.getElementById('chart-category'), { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } } });
+            const dayMap = {}; allTxns.filter(t => t.type === 'expense').forEach(t => { const d = t.date.slice(8, 10); dayMap[d] = (dayMap[d] || 0) + t.amount; });
+            const days = Object.keys(dayMap).sort(), dayData = days.map(d => dayMap[d]);
+            const [, mm] = currentMonth.split('-').map(Number), daysInMonth = new Date(parseInt(currentMonth), mm, 0).getDate(), budgetPerDay = budgetAmt > 0 ? budgetAmt / daysInMonth : null;
+            if (chartDaily) chartDaily.destroy(); const datasets = [{ label: '일별 지출', data: dayData, borderColor: '#e54666', backgroundColor: 'rgba(229,70,102,0.1)', fill: true, tension: 0.3, pointRadius: 2 }];
+            if (budgetPerDay) datasets.push({ label: '일평균 예산', data: days.map(() => budgetPerDay), borderColor: '#ffc53d', borderDash: [5, 5], pointRadius: 0, fill: false });
+            chartDaily = new Chart(document.getElementById('chart-daily'), { type: 'line', data: { labels: days, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } } } });
+            const recent = allTxns.slice(0, 5), c = document.getElementById('recent-txns');
+            if (!recent.length) { c.innerHTML = '<p class="p-6 text-center text-sm text-slate-9">내역이 없습니다.</p>'; return; }
+            c.innerHTML = recent.map(t => `<div class="px-4 py-3 flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-lg">${getCategoryEmoji(t.category_small || t.category_medium, t.icon || { income: '💰', expense: '💸', transfer: '🔄' }[t.type])}</span><div><p class="text-sm font-medium">${esc(t.description || t.category_small || t.category_medium)}</p><p class="text-[11px] text-slate-9 dark:text-slateD-9">${t.date} · ${esc(t.category_medium)}</p></div></div><span class="text-sm font-bold tabular-nums ${t.type === 'income' ? 'text-mint-11 dark:text-mintD-11' : 'text-ruby-11 dark:text-rubyD-11'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amount, t.currency)}</span></div>`).join('');
+        }
+        function setTypeFilter(f) {
+            currentFilter = f;
+            filterState.typeFilter = f;
+            filterState.page = 1;
+            document.querySelectorAll('[data-filter]').forEach(b => {
+                b.className = 'px-3 py-1.5 rounded-full text-xs font-medium ' + (b.dataset.filter === f ? 'bg-primary-9 text-white' : 'bg-slate-3 dark:bg-slateD-4 text-slate-11 dark:text-slateD-11');
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            filterState.keyword = document.getElementById('filter-keyword').value.toLowerCase();
+            filterState.dateFrom = document.getElementById('filter-date-from').value;
+            filterState.dateTo = document.getElementById('filter-date-to').value;
+            filterState.sortBy = document.getElementById('filter-sort').value;
+            filterState.page = 1;
+
+            let filtered = allTxns.filter(t => {
+                // Type filter
+                if (filterState.typeFilter !== 'all' && t.type !== filterState.typeFilter) return false;
+
+                // Keyword filter
+                if (filterState.keyword) {
+                    const searchText = (t.description || '') + ' ' + (t.category_medium || '') + ' ' + (t.category_small || '');
+                    if (!searchText.toLowerCase().includes(filterState.keyword)) return false;
+                }
+
+                // Date range filter
+                if (filterState.dateFrom && t.date < filterState.dateFrom) return false;
+                if (filterState.dateTo && t.date > filterState.dateTo) return false;
+
+                return true;
+            });
+
+            // Sorting
+            filtered.sort((a, b) => {
+                if (filterState.sortBy === 'date_desc') return new Date(b.date) - new Date(a.date);
+                if (filterState.sortBy === 'date_asc') return new Date(a.date) - new Date(b.date);
+                if (filterState.sortBy === 'amount_desc') return b.amount - a.amount;
+                if (filterState.sortBy === 'amount_asc') return a.amount - b.amount;
+                return 0;
+            });
+
+            filterState.filteredTxns = filtered;
+            renderFilteredList();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-keyword').value = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-sort').value = 'date_desc';
+            filterState.page = 1;
+            applyFilters();
+        }
+
+        function changePage(delta) {
+            const maxPage = Math.ceil(filterState.filteredTxns.length / filterState.pageSize);
+            filterState.page += delta;
+            if (filterState.page < 1) filterState.page = 1;
+            if (filterState.page > maxPage) filterState.page = maxPage;
+            renderFilteredList();
+        }
+
+        function renderFilteredList() {
+            const txns = filterState.filteredTxns;
+            const el = document.getElementById('txn-list');
+
+            // Update count
+            const total = txns.length;
+            const maxPage = Math.ceil(total / filterState.pageSize);
+            const startIdx = (filterState.page - 1) * filterState.pageSize;
+            const endIdx = Math.min(startIdx + filterState.pageSize, total);
+
+            document.getElementById('filter-count').textContent = total > 0 ? `총 ${total}개 중 ${startIdx + 1}-${endIdx}개 표시` : '검색 결과 없음';
+            document.getElementById('pagination-info').textContent = total > 0 ? `${filterState.page} / ${maxPage}` : '';
+
+            // Hide pagination if only 1 page
+            document.getElementById('pagination-container').classList.toggle('hidden', maxPage <= 1);
+
+            const pageTxns = txns.slice(startIdx, endIdx);
+            if (!pageTxns.length) {
+                el.innerHTML = '<p class="text-center py-12 text-sm text-slate-9">검색 결과가 없습니다.</p>';
+                return;
+            }
+
+            const groups = {};
+            pageTxns.forEach(t => { (groups[t.date] = groups[t.date] || []).push(t); });
+            let html = '';
+            Object.keys(groups).sort().reverse().forEach(d => {
+                html += `<div class="mt-3"><p class="text-[11px] font-medium text-slate-9 dark:text-slateD-9 mb-1.5 px-1">${d}</p><div class="bg-white dark:bg-slateD-2 rounded-2xl border border-slate-4 dark:border-slateD-4 divide-y divide-slate-3 dark:divide-slateD-4">`;
+                groups[d].forEach(t => {
+                    html += `<div class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-2 dark:hover:bg-slateD-3 transition-colors" onclick="openEditTxn('${t.id}')"><div class="flex items-center gap-3"><span class="text-lg">${getCategoryEmoji(t.category_small || t.category_medium, t.icon || { income: '💰', expense: '💸', transfer: '🔄' }[t.type])}</span><div><p class="text-sm font-medium">${esc(t.description || t.category_small)}</p><p class="text-[11px] text-slate-9">${esc(t.category_medium)} › ${esc(t.category_small)}</p></div></div><span class="text-sm font-bold tabular-nums ${t.type === 'income' ? 'text-mint-11' : 'text-ruby-11'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amount, t.currency)}</span></div>`;
+                });
+                html += `</div></div>`;
+            });
+            el.innerHTML = html;
+        }
+        function openTxnModal() { document.getElementById('txn-id').value = ''; document.getElementById('txn-date').value = new Date().toISOString().slice(0, 10); document.getElementById('txn-amount').value = ''; document.getElementById('txn-desc').value = ''; document.getElementById('txn-currency').value = 'KRW'; setTxnType('expense'); populateMedCategories(); populatePaymentMethods(); document.getElementById('txn-modal').classList.remove('hidden'); }
+        function closeTxnModal() { document.getElementById('txn-modal').classList.add('hidden'); }
+        function setTxnType(t) { document.getElementById('txn-type').value = t; document.querySelectorAll('[data-txn-type]').forEach(b => { const a = b.dataset.txnType === t, c = { expense: 'bg-ruby-9 text-white', income: 'bg-mint-9 text-mint-12', transfer: 'bg-amber-9 text-amber-12' }; b.className = 'flex-1 py-2 rounded-lg text-xs font-medium ' + (a ? c[t] : 'text-slate-9 dark:text-slateD-9'); }); populateMedCategories(); }
+        function populateMedCategories() { const t = document.getElementById('txn-type').value, cats = allCategories[t] || {}; const html = Object.keys(cats).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join(''); document.getElementById('txn-cat-med').innerHTML = html + '<option value="_other">기타(직접입력)</option>'; populateSmallCategories(); }
+        function populateSmallCategories() { const t = document.getElementById('txn-type').value, med = document.getElementById('txn-cat-med').value; const medInp = document.getElementById('txn-cat-med-input'); if (med === '_other') { medInp.classList.remove('hidden'); } else { medInp.classList.add('hidden'); medInp.value = ''; } const s = (allCategories[t] || {})[med] || []; const html = s.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join(''); document.getElementById('txn-cat-small').innerHTML = html + '<option value="_other">기타(직접입력)</option>'; checkSmallOther(); }
+        function checkSmallOther() { const sm = document.getElementById('txn-cat-small').value; const smInp = document.getElementById('txn-cat-small-input'); if (sm === '_other') { smInp.classList.remove('hidden'); } else { smInp.classList.add('hidden'); smInp.value = ''; } }
+        function populatePaymentMethods() { document.getElementById('txn-payment').innerHTML = '<option value="">선택 안함</option>' + allAssets.map(a => `<option value="${a.id}">${a.icon || ''} ${esc(a.name)}</option>`).join(''); }
+        function openEditTxn(id) { const t = allTxns.find(x => x.id === id); if (!t) return; document.getElementById('txn-id').value = t.id; document.getElementById('txn-date').value = t.date; document.getElementById('txn-amount').value = t.amount; document.getElementById('txn-desc').value = t.description; document.getElementById('txn-currency').value = t.currency; setTxnType(t.type); setTimeout(() => { const mSel = document.getElementById('txn-cat-med'); let matchM = false; for (let o of mSel.options) if (o.value === t.category_medium) { matchM = true; break; } if (matchM) { mSel.value = t.category_medium; } else { mSel.value = '_other'; document.getElementById('txn-cat-med-input').value = t.category_medium; } populateSmallCategories(); const sSel = document.getElementById('txn-cat-small'); let matchS = false; for (let o of sSel.options) if (o.value === t.category_small) { matchS = true; break; } if (matchS) { sSel.value = t.category_small; } else { sSel.value = '_other'; document.getElementById('txn-cat-small-input').value = t.category_small; } checkSmallOther(); document.getElementById('txn-payment').value = t.payment_method_id || ''; }, 50); document.getElementById('txn-modal').classList.remove('hidden'); }
+        async function saveTxn() { const id = document.getElementById('txn-id').value, mVal = document.getElementById('txn-cat-med').value, sVal = document.getElementById('txn-cat-small').value; const cMed = mVal === '_other' ? document.getElementById('txn-cat-med-input').value : mVal; const cSmall = sVal === '_other' ? document.getElementById('txn-cat-small-input').value : sVal; const p = { type: document.getElementById('txn-type').value, date: document.getElementById('txn-date').value, amount: parseFloat(document.getElementById('txn-amount').value), currency: document.getElementById('txn-currency').value, category_medium: cMed, category_small: cSmall, payment_method_id: document.getElementById('txn-payment').value || null, description: document.getElementById('txn-desc').value }; if (!p.date || isNaN(p.amount)) { alert('날짜와 금액을 입력하세요.'); return; } await fetch(id ? `${API}/transactions/${id}` : `${API}/transactions`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }); closeTxnModal(); loadData(); }
+        function openBudgetModal() { document.getElementById('budget-modal').classList.remove('hidden'); const mb = allBudgets.find(b => b.month === currentMonth); if (mb) document.getElementById('budget-amount').value = mb.amount; }
+        async function saveBudget() { const a = parseFloat(document.getElementById('budget-amount').value); if (isNaN(a)) { alert('유효한 금액을 입력하세요.'); return; } await fetch(API + '/budgets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ month: currentMonth, amount: a, currency: 'KRW' }) }); document.getElementById('budget-modal').classList.add('hidden'); loadData(); }
+        async function loadAssets() { allAssets = await fetchJSON(API + '/assets'); document.getElementById('assets-list').innerHTML = allAssets.map(a => `<div class="flex items-center justify-between py-2"><div class="flex items-center gap-2"><span class="text-lg">${a.icon || '💰'}</span><span class="text-sm">${esc(a.name)}</span><span class="text-[10px] text-slate-9">${a.type}</span></div><button onclick="deleteAsset('${a.id}')" class="text-[10px] text-ruby-9 hover:underline">삭제</button></div>`).join(''); }
+        function openAssetModal() { const n = prompt('자산 이름 (예: 국민은행 통장)'); if (!n) return; const i = prompt('아이콘 (이모지)', '💳'), ty = prompt('유형 (account/credit_card/debit_card/cash)', 'account'); fetch(API + '/assets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: n, icon: i, type: ty, memo: '' }) }).then(() => loadAssets()); }
+        async function deleteAsset(id) { if (!confirm('삭제할까요?')) return; await fetch(API + '/assets/' + id, { method: 'DELETE' }); loadAssets(); }
+        async function loadRates() { try { const d = await fetchJSON(API + '/exchange-rates'); exchangeRates = d; document.getElementById('rates-display').innerHTML = `<p>1 USD = ₩${d.USD_KRW?.toLocaleString()} KRW</p><p>1 USD = ¥${d.USD_JPY?.toLocaleString()} JPY</p><p>1 JPY = ₩${d.JPY_KRW?.toFixed(2)} KRW</p><p class="text-[10px] mt-1">갱신: ${d.updated_at || '-'}</p>`; } catch (e) { document.getElementById('rates-display').textContent = '환율 조회 실패'; } }
+        async function refreshRates() { await fetch(API + '/exchange-rates?refresh=true'); loadRates(); }
+
+        // CSV Export function
+        async function exportTransactionsCsv() {
+            const url = API + `/export/csv?month=${currentMonth}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Export failed');
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `거래내역_${currentMonth}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (e) {
+                alert('CSV 내보내기 실패: ' + e.message);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input');
+            dz.addEventListener('click', () => fi.click()); dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-primary-9'); }); dz.addEventListener('dragleave', () => dz.classList.remove('border-primary-9')); dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-primary-9'); if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]); }); fi.addEventListener('change', e => { if (e.target.files.length) uploadFile(e.target.files[0]); });
+        });
+        async function uploadFile(file) {
+            const fd = new FormData(); fd.append('file', file);
+            try {
+                const res = await fetch(API + '/upload-excel', { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.status !== 'success') { alert(json.detail || '업로드 실패'); return; }
+                uploadPreviewData = json.preview;
+                document.getElementById('upload-count').textContent = `${json.count}건 자동 분류됨`;
+                renderUploadTable();
+                document.getElementById('upload-preview').classList.remove('hidden');
+            } catch (e) { alert('파일 업로드 중 오류'); console.error(e); }
+        }
+
+        function renderUploadTable() {
+            document.getElementById('upload-table-body').innerHTML = uploadPreviewData.map((t, i) => {
+                const cats = allCategories[t.type] || {};
+                const medOptions = Object.keys(cats);
+                const isMedOther = t._medOther || (t.category_medium && !medOptions.includes(t.category_medium));
+                const smallOptions = cats[t.category_medium] || [];
+                const isSmallOther = t._smallOther || (t.category_small && !smallOptions.includes(t.category_small));
+
+                const medSelect = `<select onchange="updateUploadCat(${i}, 'med', this.value)" class="bg-transparent text-xs outline-none border-b border-transparent hover:border-slate-4 w-20 mb-1"><option value="">선택</option>${medOptions.map(c => `<option value="${esc(c)}" ${c === t.category_medium && !isMedOther ? 'selected' : ''}>${esc(c)}</option>`).join('')}<option value="_other" ${isMedOther ? 'selected' : ''}>기타(직접입력)</option></select>`;
+                const medInput = isMedOther ? `<input value="${esc(t.category_medium)}" onchange="uploadPreviewData[${i}].category_medium=this.value" placeholder="직접입력" class="bg-transparent text-xs w-20 outline-none border-b border-primary-9 pb-1 mt-1 block">` : '';
+
+                const smallSelect = `<select onchange="updateUploadCat(${i}, 'small', this.value)" class="bg-transparent text-xs outline-none border-b border-transparent hover:border-slate-4 w-20 mb-1"><option value="">선택</option>${smallOptions.map(s => `<option value="${esc(s)}" ${s === t.category_small && !isSmallOther ? 'selected' : ''}>${esc(s)}</option>`).join('')}<option value="_other" ${isSmallOther ? 'selected' : ''}>기타(직접입력)</option></select>`;
+                const smallInput = isSmallOther ? `<input value="${esc(t.category_small)}" onchange="uploadPreviewData[${i}].category_small=this.value" placeholder="직접입력" class="bg-transparent text-xs w-20 outline-none border-b border-primary-9 pb-1 mt-1 block">` : '';
+
+                return `<tr class="border-b border-slate-3 dark:border-slateD-4">
+                    <td class="py-2 px-1 text-[11px]">${esc(t.date).slice(5)}</td>
+                    <td class="py-2 px-1 max-w-[120px]"><input value="${esc(t.description)}" title="${esc(t.description)}" onchange="uploadPreviewData[${i}].description=this.value" class="bg-transparent text-xs w-full outline-none border-b border-transparent hover:border-primary-9 focus:border-primary-9 pb-1 truncate"></td>
+                    <td class="py-2 px-1 tabular-nums font-medium text-right pr-2">${fmt(t.amount)}</td>
+                    <td class="py-2 px-1 align-top"><select onchange="uploadPreviewData[${i}].type=this.value; uploadPreviewData[${i}].category_medium=''; uploadPreviewData[${i}].category_small=''; renderUploadTable()" class="bg-transparent text-xs outline-none border-b border-transparent hover:border-slate-4"><option value="expense" ${t.type === 'expense' ? 'selected' : ''}>지출</option><option value="income" ${t.type === 'income' ? 'selected' : ''}>수입</option><option value="transfer" ${t.type === 'transfer' ? 'selected' : ''}>이체</option></select></td>
+                    <td class="py-2 px-1 align-top">${medSelect}${medInput}</td>
+                    <td class="py-2 px-1 align-top">${smallSelect}${smallInput}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateUploadCat(i, level, val) {
+            if (level === 'med') {
+                uploadPreviewData[i]._medOther = (val === '_other');
+                uploadPreviewData[i].category_medium = val === '_other' ? '' : val;
+                uploadPreviewData[i].category_small = ''; uploadPreviewData[i]._smallOther = false;
+            } else {
+                uploadPreviewData[i]._smallOther = (val === '_other');
+                uploadPreviewData[i].category_small = val === '_other' ? '' : val;
+            }
+            renderUploadTable();
+        }
+        async function confirmUpload() { if (!uploadPreviewData.length) { alert('업로드할 데이터가 없습니다.'); return; } try { const res = await fetch(API + '/transactions/bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(uploadPreviewData) }); const json = await res.json(); alert(`${json.count}건 등록 완료!`); uploadPreviewData = []; document.getElementById('upload-preview').classList.add('hidden'); loadData(); } catch (e) { alert('등록 실패'); } }
+        let calcExpr = '';
+        document.addEventListener('DOMContentLoaded', () => { document.getElementById('btn-calc').addEventListener('click', () => document.getElementById('calc-modal').classList.remove('hidden')); const keys = ['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '−', 'C', '0', '.', '=']; const grid = document.getElementById('calc-keys'); keys.forEach(k => { const btn = document.createElement('button'); btn.textContent = k; btn.className = 'py-3 rounded-xl text-sm font-medium transition-colors ' + (['+', '−', '×', '÷', '='].includes(k) ? 'bg-primary-9 text-white hover:bg-primary-10' : k === 'C' ? 'bg-ruby-9/20 text-ruby-11 hover:bg-ruby-9/30' : 'bg-slate-3 dark:bg-slateD-4 hover:bg-slate-4 dark:hover:bg-slateD-5'); btn.onclick = () => calcPress(k); grid.appendChild(btn); }); });
+        function calcPress(k) { const disp = document.getElementById('calc-display'); if (k === 'C') { calcExpr = ''; disp.value = '0'; return; } if (k === '=') { try { disp.value = eval(calcExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')) || 0; } catch { disp.value = 'Error'; } return; } calcExpr += k; disp.value = calcExpr; }
+        // ═══ CATEGORY BUDGETS & SAVINGS GOALS ═══
+        let currentCategoryBudgets = [];
+        let currentSavingsGoals = [];
+
+        async function loadCategoryBudgets(month = null) {
+            if (month === null) month = new Date().toISOString().slice(0, 7);
+            try {
+                const response = await apiGet(`/budgets/categories?month=${month}`);
+                currentCategoryBudgets = response || [];
+                renderCategoryBudgetsTable();
+            } catch (error) {
+                console.error('Failed to load category budgets:', error);
+                showWarning('카테고리 예산 로드 실패');
+            }
+        }
+
+        function renderCategoryBudgetsTable() {
+            const container = document.getElementById('category-budgets-container');
+            const month = new Date().toISOString().slice(0, 7);
+
+            if (currentCategoryBudgets.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-9">설정된 예산이 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = currentCategoryBudgets.map(budget => {
+                const spent = (data || []).filter(t => t.month === month && t.category_medium === budget.category).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                const remaining = budget.amount - spent;
+                const usagePercent = Math.min((spent / budget.amount) * 100, 100);
+                const statusClass = spent >= budget.amount ? 'bg-ruby-9' : spent >= budget.amount * 0.8 ? 'bg-amber-9' : 'bg-primary-9';
+
+                return `
+                <div class="border border-slate-4 dark:border-slateD-4 rounded-xl p-3 bg-slate-1 dark:bg-slateD-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold">${budget.category}</span>
+                        <span class="text-[10px] text-slate-9">₩${spent.toLocaleString()} / ₩${budget.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="w-full bg-slate-3 dark:bg-slateD-3 rounded-full h-2 mb-2">
+                        <div class="h-2 rounded-full ${statusClass}" style="width: ${usagePercent}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-slate-9">${Math.round(usagePercent)}% 사용</span>
+                        <button class="text-[10px] text-primary-9 hover:underline" onclick="editCategoryBudget('${budget.id}')">수정</button>
+                        <button class="text-[10px] text-ruby-9 hover:underline" onclick="deleteCategoryBudget('${budget.id}')">삭제</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            checkBudgetAlerts();
+        }
+
+        function editCategoryBudget(budgetId) {
+            const budget = currentCategoryBudgets.find(b => b.id === budgetId);
+            if (!budget) return;
+            document.getElementById('budget-category-select').value = budget.category;
+            document.getElementById('budget-amount-input').value = budget.amount;
+            document.getElementById('category-budget-form').dataset.budgetId = budgetId;
+            openCategoryBudgetModal();
+        }
+
+        async function saveCategoryBudget(event) {
+            event.preventDefault();
+            const month = new Date().toISOString().slice(0, 7);
+            const category = document.getElementById('budget-category-select').value;
+            const amount = parseFloat(document.getElementById('budget-amount-input').value);
+            const budgetId = document.getElementById('category-budget-form').dataset.budgetId || `${month}_${category}`;
+
+            try {
+                await apiPost('/budgets/categories', {
+                    id: budgetId, month, category, amount, currency: 'KRW'
+                });
+                closeCategoryBudgetModal();
+                loadCategoryBudgets(month);
+                showSuccess('예산이 저장되었습니다.');
+            } catch (error) {
+                showError('예산 저장 실패');
+            }
+        }
+
+        async function deleteCategoryBudget(budgetId) {
+            if (!confirm('이 예산을 삭제하시겠습니까?')) return;
+            try {
+                await apiDelete(`/budgets/categories/${budgetId}`);
+                await loadCategoryBudgets();
+                showSuccess('예산이 삭제되었습니다.');
+            } catch (error) {
+                showError('예산 삭제 실패');
+            }
+        }
+
+        function openCategoryBudgetModal() {
+            initCategoryBudgetForm();
+            document.getElementById('category-budget-modal').classList.remove('hidden');
+        }
+
+        function closeCategoryBudgetModal() {
+            document.getElementById('category-budget-modal').classList.add('hidden');
+            document.getElementById('category-budget-form').reset();
+            delete document.getElementById('category-budget-form').dataset.budgetId;
+        }
+
+        function initCategoryBudgetForm() {
+            const select = document.getElementById('budget-category-select');
+            if (select.options.length > 1) return; // Already initialized
+            const categories = ['식비', '교통', '의류', '주거/통신', '여가/쇼핑', '의료/건강', '자동차', '교육', '구독서비스', '기타'];
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function checkBudgetAlerts() {
+            const month = new Date().toISOString().slice(0, 7);
+            currentCategoryBudgets.forEach(budget => {
+                const spent = (data || []).filter(t => t.month === month && t.category_medium === budget.category).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                const usagePercent = spent / budget.amount;
+                if (usagePercent >= 1.0) showDanger(`⚠️ ${budget.category} 예산이 초과되었습니다!`);
+                else if (usagePercent >= 0.8) showWarning(`⚠️ ${budget.category} 예산의 80%에 도달했습니다.`);
+            });
+        }
+
+        async function loadSavingsGoals() {
+            try {
+                const response = await apiGet('/savings-goals');
+                currentSavingsGoals = response || [];
+                renderSavingsGoalsCards();
+            } catch (error) {
+                console.error('Failed to load savings goals:', error);
+                showWarning('절약 목표 로드 실패');
+            }
+        }
+
+        function renderSavingsGoalsCards() {
+            const container = document.getElementById('savings-goals-container');
+
+            if (currentSavingsGoals.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-9">설정된 목표가 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = currentSavingsGoals.map(goal => {
+                const progressPercent = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
+                const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+                const statusClass = progressPercent >= 100 ? 'bg-primary-9' : 'bg-amber-9';
+                const statusText = progressPercent >= 100 ? '달성!' : `${daysLeft}일 남음`;
+
+                return `
+                <div class="border border-slate-4 dark:border-slateD-4 rounded-xl p-3 bg-slate-1 dark:bg-slateD-1">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <p class="text-xs font-semibold">${goal.name}</p>
+                            <p class="text-[10px] text-slate-9">${goal.description || ''}</p>
+                        </div>
+                        <button class="text-slate-9 hover:text-ruby-9" onclick="deleteSavingsGoal('${goal.id}')">&times;</button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span>₩${goal.current_amount.toLocaleString()} / ₩${goal.target_amount.toLocaleString()}</span>
+                            <span class="font-semibold ${progressPercent >= 100 ? 'text-primary-9' : 'text-amber-9'}">${statusText}</span>
+                        </div>
+                        <div class="w-full bg-slate-3 dark:bg-slateD-3 rounded-full h-2">
+                            <div class="h-2 rounded-full ${statusClass}" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="number" class="text-[10px] flex-1 bg-slate-2 dark:bg-slateD-3 border border-slate-4 rounded px-2 py-1" placeholder="추가" data-goal-id="${goal.id}" />
+                            <button class="text-[10px] px-2 py-1 bg-primary-9 text-white rounded hover:bg-primary-10" onclick="addGoalAmount(event)">추가</button>
+                            <button class="text-[10px] px-2 py-1 bg-slate-3 dark:bg-slateD-3 rounded hover:bg-slate-4" onclick="editSavingsGoal('${goal.id}')">수정</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function addGoalAmount(event) {
+            const input = event.target.previousElementSibling;
+            const goalId = input.dataset.goalId;
+            const addAmount = parseFloat(input.value);
+            if (!addAmount || addAmount <= 0) return;
+
+            const goal = currentSavingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            try {
+                await apiPut(`/savings-goals/${goalId}`, { ...goal, current_amount: goal.current_amount + addAmount });
+                await loadSavingsGoals();
+                showSuccess('목표 진행이 업데이트되었습니다.');
+            } catch (error) {
+                showError('목표 업데이트 실패');
+            }
+        }
+
+        function editSavingsGoal(goalId) {
+            const goal = currentSavingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+            document.getElementById('goal-name-input').value = goal.name;
+            document.getElementById('goal-target-input').value = goal.target_amount;
+            document.getElementById('goal-deadline-input').value = goal.deadline;
+            document.getElementById('goal-description-input').value = goal.description || '';
+            document.getElementById('savings-goal-form').dataset.goalId = goalId;
+            openSavingsGoalModal();
+        }
+
+        async function saveSavingsGoal(event) {
+            event.preventDefault();
+            const goalId = document.getElementById('savings-goal-form').dataset.goalId;
+            const name = document.getElementById('goal-name-input').value;
+            const targetAmount = parseFloat(document.getElementById('goal-target-input').value);
+            const deadline = document.getElementById('goal-deadline-input').value;
+            const description = document.getElementById('goal-description-input').value;
+
+            try {
+                if (goalId) {
+                    const goal = currentSavingsGoals.find(g => g.id === goalId);
+                    await apiPut(`/savings-goals/${goalId}`, {
+                        id: goalId, name, target_amount: targetAmount, current_amount: goal.current_amount,
+                        currency: 'KRW', deadline, created_at: goal.created_at, description
+                    });
+                } else {
+                    await apiPost('/savings-goals', {
+                        name, target_amount: targetAmount, current_amount: 0,
+                        currency: 'KRW', deadline, description
+                    });
+                }
+                closeSavingsGoalModal();
+                await loadSavingsGoals();
+                showSuccess('목표가 저장되었습니다.');
+            } catch (error) {
+                showError('목표 저장 실패');
+            }
+        }
+
+        async function deleteSavingsGoal(goalId) {
+            if (!confirm('이 목표를 삭제하시겠습니까?')) return;
+            try {
+                await apiDelete(`/savings-goals/${goalId}`);
+                await loadSavingsGoals();
+                showSuccess('목표가 삭제되었습니다.');
+            } catch (error) {
+                showError('목표 삭제 실패');
+            }
+        }
+
+        function openSavingsGoalModal() {
+            document.getElementById('savings-goal-modal').classList.remove('hidden');
+        }
+
+        function closeSavingsGoalModal() {
+            document.getElementById('savings-goal-modal').classList.add('hidden');
+            document.getElementById('savings-goal-form').reset();
+            delete document.getElementById('savings-goal-form').dataset.goalId;
+        }
+
+        // Initialize app with new theme system
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load old theme preference and apply
+            const t = localStorage.getItem('ledger-theme');
+            if (t === 'light') {
+                setTheme('light');
+            } else {
+                setTheme('dark');
+            }
+
+            allAssets = await fetchJSON(API + '/assets').catch(() => []);
+            allCategories = await fetchJSON(API + '/categories').catch(() => ({}));
+            const color = localStorage.getItem('ledger-color') || 'indigo';
+            changeThemeColor(color);
+            renderCategoryEmojis();
+            loadData();
+
+            // Load category budgets and savings goals when settings tab is opened
+            const settingsTab = document.querySelector('[data-tab-btn="settings"]');
+            if (settingsTab) {
+                settingsTab.addEventListener('click', () => {
+                    loadCategoryBudgets();
+                    loadSavingsGoals();
+                });
+            }
+        });
+    </script>
+
+    <!-- New UI/UX System Scripts -->
+    <script src="assets/scripts/theme.js"></script>
+    <script src="assets/scripts/ui.js"></script>
+    <script src="assets/scripts/api.js"></script>
+</body>
+
+</html>
